@@ -10,13 +10,11 @@ impl Reader for CsvReader {
     fn with_headers(address: &str) -> Result<DataFrame<String>, Box<dyn Error>> {
         let mut reader = csv::Reader::from_path(address)?;
         let headers = reader.headers()?;
-        println!("{}", headers.len());
         let mut columns: Vec<Column<String>> = Vec::with_capacity(headers.len());
         for _ in 0..headers.len() {
             columns.push(Column::new());
         }
         headers.iter().zip(columns.iter_mut()).for_each(|(header, col)| {
-            println!("({},{})", col, header);
             col.set_name(header.to_owned())
         });
         for rec in reader.records() {
