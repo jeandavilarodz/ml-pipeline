@@ -3,8 +3,10 @@ use pipeline::input::Reader;
 
 
 fn main() {
-    let input = CsvReader::with_headers("datasets/car.data");
+    let input = CsvReader::with_headers("datasets/test.csv");
     if let Ok(input) = input {
-        println!("{:?}", input.get_column_idx(0));
+        for col in input.columns() {
+            println!("{:?}", col);   
+        }
     }
 }
