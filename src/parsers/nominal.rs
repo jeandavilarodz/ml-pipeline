@@ -14,6 +14,7 @@ impl Parser for NominalParser {
         let mut map = HashMap::<String, usize>::new();
         let mut bitshifts = 0;
         for value in table.values() {
+            // TODO: Add logic to skip over missing data
             if let Some(found) = map.get(value) {
                 ret.push(Some(*found as Numeric));
             }

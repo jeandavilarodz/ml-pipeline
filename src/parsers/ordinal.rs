@@ -15,6 +15,7 @@ impl Parser for OrdinalParser {
         let mut ret = Column::<Option<Numeric>>::new();
         let mut map = Vec::<String>::new();
         for value in table.values() {
+            // TODO: Add logic to skip missing data
             if let Some(found) = map.iter().position(|v| v == value) {
                 ret.push(Some(found as Numeric));
             }
