@@ -1,6 +1,6 @@
 use pipeline::input::csv::CsvReader;
 use pipeline::input::Reader;
-use pipeline::parsers::{ordinal::OrdinalParser, numerical::NumericalParser, parse_table};
+use pipeline::parsers::{ordinal::OrdinalParser, numerical::NumericalParser, nominal::NominalParser, parse_table};
 
 
 fn main() {
@@ -9,7 +9,7 @@ fn main() {
         for col in input.columns() {
             println!("{}", col);
         }
-        let parsed = parse_table(input, vec![Box::new(OrdinalParser), Box::new(OrdinalParser), Box::new(NumericalParser)]).expect("Could not parse input");
+        let parsed = parse_table(input, vec![Box::new(OrdinalParser), Box::new(NominalParser), Box::new(NumericalParser)]).expect("Could not parse input");
         for col in parsed.columns() {
             println!("{:#?}", col);
         }
