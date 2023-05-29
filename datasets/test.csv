@@ -1,4 +1,4 @@
-Name,Grade,School
-Jean,Grad,JHU
-Alice,Undergrad,UMD
-Bob,Undergrad,UCSD
+Name,School,GPA
+Jean,JHU,3.5
+Alice,UMD,3.21
+Bob,UCSD,3.6
