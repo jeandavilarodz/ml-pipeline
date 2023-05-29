@@ -1,6 +1,8 @@
 //! This section includes the parsing logic for data in table
 
+pub mod nominal;
 pub mod numerical;
+pub mod ordinal;
 pub mod null;
 
 use crate::data::data_frame::DataFrame;
