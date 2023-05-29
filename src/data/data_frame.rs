@@ -19,6 +19,10 @@ impl<T> DataFrame<T> {
         self.columns.iter()
     }
 
+    pub fn columns_mut(&mut self) -> std::slice::IterMut<'_, Column<T>> {
+        self.columns.iter_mut()
+    }
+
     pub fn add_column(&mut self, column: Column<T>) {
         if let Some(name) = column.get_name() {
             self.column_idx_map.insert(name.to_owned(), self.columns.len());
