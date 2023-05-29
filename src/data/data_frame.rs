@@ -1,6 +1,7 @@
 use crate::data::column::Column;
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct DataFrame<T: Sized> {
     columns: Vec<Box<Column<T>>>,
     column_idx_map: HashMap<String, usize>,
@@ -15,11 +16,9 @@ impl<T> DataFrame<T> {
     }
     
     pub fn add_column(&mut self, column: Column<T>) {
-        self.columns.push(Box::new(column));
-    }
-    
-    pub fn add_column_with_name(&mut self, name: &str, column: Column<T>) {
-        self.column_idx_map.insert(name.to_owned(), self.columns.len());
+        if let Some(name) = column.get_name() {
+            self.column_idx_map.insert(name.to_owned(), self.columns.len());
+        }
         self.columns.push(Box::new(column));
     }
     

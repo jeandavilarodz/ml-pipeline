@@ -23,6 +23,13 @@ impl <T>Column<T> {
         self.name = Some(name);
     }
     
+    pub fn get_name(&self) -> Option<&str> {
+        return match &self.name {
+            Some(name) => Some(&name),
+            None => None
+        }
+    }
+
     pub fn append(&mut self, values: Vec<T>) {
         self.values.extend(values);
     }
