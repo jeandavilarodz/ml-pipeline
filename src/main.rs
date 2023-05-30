@@ -1,5 +1,5 @@
 use pipeline::input;
-use pipeline::parsers::{ordinal::OrdinalParser, numerical::NumericalParser, nominal::NominalParser, parse_table};
+use pipeline::parsers;
 
 
 fn main() {
@@ -8,7 +8,7 @@ fn main() {
         for col in input.columns() {
             println!("{}", col);
         }
-        let parsed = parse_table(input, vec![Box::new(OrdinalParser), Box::new(NominalParser), Box::new(NumericalParser)]).expect("Could not parse input");
+        let parsed = parsers::parse_input(input, vec!["ordinal", "nominal", "numerical"]).expect("Could not parse input");
         for col in parsed.columns() {
             println!("{:#?}", col);
         }
