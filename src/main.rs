@@ -1,10 +1,9 @@
-use pipeline::input::csv::CsvReader;
-use pipeline::input::Reader;
+use pipeline::input;
 use pipeline::parsers::{ordinal::OrdinalParser, numerical::NumericalParser, nominal::NominalParser, parse_table};
 
 
 fn main() {
-    let input = CsvReader::with_headers("datasets/test.csv");
+    let input = input::with_headers("datasets/test.csv", "csv");
     if let Ok(input) = input {
         for col in input.columns() {
             println!("{}", col);

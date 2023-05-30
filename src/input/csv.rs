@@ -7,7 +7,7 @@ use csv;
 pub struct CsvReader;
 
 impl Reader for CsvReader {
-    fn with_headers(address: &str) -> Result<DataFrame<String>, Box<dyn Error>> {
+    fn with_headers(&self, address: &str) -> Result<DataFrame<String>, Box<dyn Error>> {
         let mut reader = csv::Reader::from_path(address)?;
         let headers = reader.headers()?;
         let mut columns: Vec<Column<String>> = Vec::with_capacity(headers.len());
@@ -25,7 +25,7 @@ impl Reader for CsvReader {
         Ok(ret)
     }
     
-    fn read(address: &str) -> Result<DataFrame<String>, Box<dyn Error>> {
+    fn read(&self, address: &str) -> Result<DataFrame<String>, Box<dyn Error>> {
         let mut reader = csv::Reader::from_path(address)?;
         let headers = reader.headers()?;
         let mut columns: Vec<Column<String>> = Vec::with_capacity(headers.len());
