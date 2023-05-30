@@ -1,12 +1,12 @@
 //! This section includes the parsing logic for data in table
 
 mod nominal;
+mod null;
 mod numerical;
 mod ordinal;
-mod null;
 
-use crate::data::data_frame::DataFrame;
 use crate::data::column::Column;
+use crate::data::data_frame::DataFrame;
 use crate::types::Numeric;
 
 use std::collections::HashMap;
@@ -19,27 +19,39 @@ pub trait Parser {
     fn parse(&self, table: &Column<String>) -> Column<Option<Numeric>>;
 }
 
-lazy_static!{
+lazy_static! {
     static ref PARSE_TYPE_MAP: HashMap<&'static str, Box<dyn Parser + Sync>> = HashMap::from([
-        ("numerical", Box::new(numerical::NumericalParser) as Box<dyn Parser + Sync>),
-        ("nominal", Box::new(nominal::NominalParser) as Box<dyn Parser + Sync>),
-        ("ordinal", Box::new(ordinal::OrdinalParser) as Box<dyn Parser + Sync>),
+        (
+            "numerical",
+            Box::new(numerical::NumericalParser) as Box<dyn Parser + Sync>
+        ),
+        (
+            "nominal",
+            Box::new(nominal::NominalParser) as Box<dyn Parser + Sync>
+        ),
+        (
+            "ordinal",
+            Box::new(ordinal::OrdinalParser) as Box<dyn Parser + Sync>
+        ),
         ("null", Box::new(null::NullParser) as Box<dyn Parser + Sync>),
     ]);
 }
 
-pub fn parse_input(table: DataFrame<String>, parsers: Vec<&str>) -> Result<DataFrame<Option<Numeric>>, Box<dyn Error>> {
+pub fn parse_input(
+    table: DataFrame<String>,
+    parsers: Vec<&str>,
+) -> Result<DataFrame<Option<Numeric>>, Box<dyn Error>> {
     let mut ret = DataFrame::<Option<Numeric>>::new();
     if table.columns().len() != parsers.len() {
         simple_error::bail!("Did not provide enough parsers per table column!");
     }
 
-    let mut all_keys = false;
-    for parser in parsers.iter() {
-        all_keys |= PARSE_TYPE_MAP.contains_key(parser);
-    }
-    if !all_keys {
-        simple_error::bail!("Parser type not found!");
+    let missing_parser = parsers
+        .iter()
+        .fold(false, |acc, p| acc | !PARSE_TYPE_MAP.contains_key(p));
+
+    if missing_parser {
+        simple_error::bail!("Parser type not supported!");
     }
 
     let mut parsed_cols: Vec<Column<Option<Numeric>>> = Vec::new();
@@ -55,6 +67,6 @@ pub fn parse_input(table: DataFrame<String>, parsers: Vec<&str>) -> Result<DataF
         parsed_cols.push(new_col);
     }
     parsed_cols.into_iter().for_each(|col| ret.add_column(col));
-    
+
     Ok(ret)
 }
