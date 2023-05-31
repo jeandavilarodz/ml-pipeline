@@ -1,6 +1,7 @@
 use pipeline::input;
 use pipeline::parsers;
 use pipeline::scrubbers;
+use pipeline::transform;
 
 
 fn main() {
@@ -15,7 +16,7 @@ fn main() {
         println!("{}", col);
     }
 
-    let parsed = parsers::parse_input(input, vec!["ordinal", "nominal", "numerical"], vec!["?"]).expect("Could not parse input");
+    let parsed = parsers::parse_input(input, vec!["nominal", "ordinal", "numerical"], vec!["?"]).expect("Could not parse input");
     for col in parsed.columns() {
         println!("{:?}", col);
     }
@@ -26,10 +27,19 @@ fn main() {
         return;
     }
 
-    let cleaned = cleaned.unwrap();
+    let mut cleaned = cleaned.unwrap();
     for col in cleaned.columns() {
         println!("{}", col);
     }
 
+    let result = transform::apply(&mut cleaned, vec![("normalize", 2)]);
+    if let Err(error) = result {
+        println!("{}", error.to_string());
+        return;
+    }
+
+    for col in cleaned.columns() {
+        println!("{}", col);
+    }
 
 }
