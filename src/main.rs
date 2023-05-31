@@ -8,7 +8,7 @@ fn main() {
         for col in input.columns() {
             println!("{}", col);
         }
-        let parsed = parsers::parse_input(input, vec!["ordinal", "nominal", "numerical"]).expect("Could not parse input");
+        let parsed = parsers::parse_input(input, vec!["ordinal", "nominal", "numerical"], vec!["?"]).expect("Could not parse input");
         for col in parsed.columns() {
             println!("{:#?}", col);
         }

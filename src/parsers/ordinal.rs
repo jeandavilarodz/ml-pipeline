@@ -11,11 +11,14 @@ use std::collections::HashMap;
 pub struct OrdinalParser;
 
 impl Parser for OrdinalParser {
-    fn parse(&self, table: &Column<String>) -> Column<Option<Numeric>> {
+    fn parse(&self, column: &Column<String>, missing_indicators: &Vec<&str>) -> Column<Option<Numeric>> {
         let mut ret = Column::<Option<Numeric>>::new();
         let mut map = Vec::<String>::new();
-        for value in table.values() {
-            // TODO: Add logic to skip missing data
+        for value in column.values() {
+            if missing_indicators.contains(&value.as_str()) {
+                ret.push(None);
+                continue;
+            }
             if let Some(found) = map.iter().position(|v| v == value) {
                 ret.push(Some(found as Numeric));
             }
