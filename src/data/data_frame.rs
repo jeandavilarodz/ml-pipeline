@@ -33,10 +33,21 @@ impl<T> DataFrame<T> {
     pub fn get_column_idx(&self, idx: usize) -> Option<&Column<T>> {
         self.columns.get(idx)
     }
+
+    pub fn get_column_idx_mut(&mut self, idx: usize) -> Option<&mut Column<T>> {
+        self.columns.get_mut(idx)
+    }
     
     pub fn get_column_name(&self, name: &str) -> Option<&Column<T>> {
         match self.column_idx_map.get(name) {
             Some(idx) => self.columns.get(*idx),
+            _ => None
+        }
+    }
+
+    pub fn get_column_name_mut(&mut self, name: &str) -> Option<&mut Column<T>> {
+        match self.column_idx_map.get(name) {
+            Some(idx) => self.columns.get_mut(*idx),
             _ => None
         }
     }

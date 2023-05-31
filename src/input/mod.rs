@@ -15,9 +15,9 @@ pub trait Reader {
 }
 
 lazy_static!{
-static ref INPUT_FORMAT_MAP: HashMap<&'static str, Box<dyn Reader + Sync>> = HashMap::from([
-    ("csv", Box::new(csv::CsvReader) as Box<dyn Reader + Sync>),
-]);
+    static ref INPUT_FORMAT_MAP: HashMap<&'static str, Box<dyn Reader + Sync>> = HashMap::from([
+        ("csv", Box::new(csv::CsvReader) as Box<dyn Reader + Sync>),
+    ]);
 }
 
 pub fn read(address: &str, format: &str) -> Result<DataFrame<String>, Box<dyn Error>> {

@@ -37,6 +37,13 @@ impl <T>Column<T> {
     pub fn push(&mut self, value: T) {
         self.values.push(value);
     }
+
+    pub fn remove(&mut self, idx: usize) {
+        if idx >= self.values.len() {
+            return;
+        }
+        self.values.remove(idx);
+    }
     
     pub fn set_metadata(&mut self, metadata: HashMap<usize, String>) {
         self.metadata = Some(metadata);
@@ -51,6 +58,14 @@ impl <T>Column<T> {
 
     pub fn values(&self) -> std::slice::Iter<'_, T> {
         self.values.iter()
+    }
+
+    pub fn values_mut(&mut self) -> std::slice::IterMut<'_, T> {
+        self.values.iter_mut()
+    }
+
+    pub fn clear(&mut self) {
+        self.values.clear();
     }
 }
 
