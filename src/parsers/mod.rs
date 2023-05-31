@@ -16,7 +16,7 @@ use lazy_static::lazy_static;
 use simple_error;
 
 pub trait Parser {
-    fn parse(&self, column: &Column<String>, missing_indicators: &Vec<&str>) -> Column<Option<Numeric>>;
+    fn parse(&self, column: &Column<Option<&str>>) -> Column<Option<Numeric>>;
 }
 
 lazy_static! {
@@ -38,9 +38,8 @@ lazy_static! {
 }
 
 pub fn parse_input(
-    table: DataFrame<String>,
+    table: DataFrame<Option<&str>>,
     parsers: Vec<&str>,
-    missing_indicators: Vec<&str>,
 ) -> Result<DataFrame<Option<Numeric>>, Box<dyn Error>> {
     let mut ret = DataFrame::<Option<Numeric>>::new();
     if table.columns().len() != parsers.len() {
@@ -58,7 +57,7 @@ pub fn parse_input(
     let mut parsed_cols: Vec<Column<Option<Numeric>>> = Vec::new();
     for (parser, col) in parsers.iter().zip(table.columns()) {
         let parser = &PARSE_TYPE_MAP[parser];
-        let mut new_col = parser.parse(col, &missing_indicators);
+        let mut new_col = parser.parse(col);
         if let Some(name) = col.get_name() {
             new_col.set_name(name.to_owned());
         }
