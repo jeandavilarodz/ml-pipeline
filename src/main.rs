@@ -12,13 +12,13 @@ fn main() {
 
     let input = input.unwrap();
     for col in input.columns() {
-        println!("{:?}", col);
+        println!("{}", col);
     }
 
     let parsed = parsers::parse_input(input, vec!["nominal", "ordinal", "numerical"])
         .expect("Could not parse input");
     for col in parsed.columns() {
-        println!("{:?}", col);
+        println!("{}", col);
     }
 
     let cleaned = scrubbers::scrub(parsed, vec![("mean", 2)]);
