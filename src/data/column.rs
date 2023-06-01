@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
-const DISPLAY_MAX: usize = 5;
+const DISPLAY_MAX: usize = 10;
 
 #[derive(Debug)]
 pub struct Column <T: Sized>{
@@ -70,7 +70,7 @@ impl <T>Column<T> {
 }
 
 impl<T> fmt::Display for Column<T>
-where T: fmt::Display + fmt::Debug
+where T: fmt::Debug
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.name {
@@ -79,15 +79,15 @@ where T: fmt::Display + fmt::Debug
         }
         if self.values.len() <= DISPLAY_MAX {
             for val in self.values.iter() {
-                write!(f, "{:^16?}\n", val)?;
+                write!(f, "{:?}\n", val)?;
             }
             return Ok(())
         }
         for val in self.values[0..(DISPLAY_MAX - 1)].iter() {
-            write!(f, "{:^16?}\n", val)?;
+            write!(f, "{:?}\n", val)?;
         }
-        write!(f, "{:^16}\n", "...")?;
-        write!(f, "{:^16?}\n", self.values.last().unwrap())?;
+        write!(f, "{}\n", "...")?;
+        write!(f, "{:?}\n", self.values.last().unwrap())?;
         return Ok(())
     }
 }

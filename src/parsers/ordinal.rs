@@ -11,21 +11,20 @@ use std::collections::HashMap;
 pub struct OrdinalParser;
 
 impl Parser for OrdinalParser {
-    fn parse(&self, column: &Column<String>, missing_indicators: &Vec<&str>) -> Column<Option<Numeric>> {
+    fn parse(&self, column: &Column<Option<String>>) -> Column<Option<Numeric>> {
         let mut ret = Column::<Option<Numeric>>::new();
         let mut map = Vec::<String>::new();
         for value in column.values() {
-            if missing_indicators.contains(&value.as_str()) {
-                ret.push(None);
-                continue;
-            }
-            if let Some(found) = map.iter().position(|v| v == value) {
-                ret.push(Some(found as Numeric));
-            }
-            else {
-                ret.push(Some(map.len() as Numeric));
-                map.push(value.to_owned());
-            }
+            let parsed = value.as_ref().map(|val| {
+                if let Some(found) = map.iter().position(|v| v == val) {
+                    found as Numeric
+                }
+                else {
+                    map.push(val.to_owned());
+                    (map.len() - 1) as Numeric
+                }
+            });
+            ret.push(parsed);
         }
         let mut value_map = HashMap::<usize, String>::new();
         for (encoded, value) in map.into_iter().enumerate() {

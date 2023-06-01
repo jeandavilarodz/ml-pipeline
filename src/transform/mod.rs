@@ -15,13 +15,19 @@ pub trait Transform {
     fn apply(&self, column: &mut Column<Numeric>);
 }
 
-lazy_static!{
-    static ref TRANSFORM_TYPE_MAP: HashMap<&'static str, Box<dyn Transform + Sync>> = HashMap::from([
-        ("normalize", Box::new(normalize::NormalizeTransform) as Box<dyn Transform + Sync>),
-    ]);
+lazy_static! {
+    static ref TRANSFORM_TYPE_MAP: HashMap<&'static str, Box<dyn Transform + Sync>> =
+        HashMap::from([(
+            "normalize",
+            Box::new(normalize::NormalizeTransform) as Box<dyn Transform + Sync>
+        ),]);
 }
 
-pub fn apply(table: &mut DataFrame<Numeric>, transforms: Vec<(&str, usize)>) -> Result<(), Box<dyn Error>> {
+pub fn apply(
+    table: &mut DataFrame<Numeric>,
+    transforms: Vec<(&str, usize)>,
+    _parameters: Option<HashMap<&str, Numeric>>,
+) -> Result<(), Box<dyn Error>> {
     let missing_transform = transforms
         .iter()
         .fold(false, |acc, p| acc | !TRANSFORM_TYPE_MAP.contains_key(p.0));

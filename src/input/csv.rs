@@ -1,39 +1,38 @@
 use super::Reader;
-use crate::data::data_frame::DataFrame;
 use crate::data::column::Column;
-use std::error::Error;
+use crate::data::data_frame::DataFrame;
 use csv;
+use std::error::Error;
 
 pub struct CsvReader;
 
 impl Reader for CsvReader {
-    fn with_headers(&self, address: &str) -> Result<DataFrame<String>, Box<dyn Error>> {
+    fn read(
+        &self,
+        address: &str,
+        missing_values: &Vec<&str>,
+        headers: bool,
+    ) -> Result<DataFrame<Option<String>>, Box<dyn Error>> {
         let mut reader = csv::Reader::from_path(address)?;
-        let headers = reader.headers()?;
-        let mut columns: Vec<Column<String>> = Vec::with_capacity(headers.len());
-        for _ in 0..headers.len() {
+        let first = reader.headers()?;
+        let mut columns: Vec<Column<Option<String>>> = Vec::with_capacity(first.len());
+        for _ in 0..first.len() {
             columns.push(Column::new());
         }
-        headers.iter().zip(columns.iter_mut()).for_each(|(header, col)| {
-            col.set_name(header.to_owned())
-        });
-        for rec in reader.records() {
-            rec?.iter().zip(columns.iter_mut()).for_each(|(entry, col)| col.push(entry.to_owned()));
-        }
-        let mut ret = DataFrame::new();
-        columns.into_iter().for_each(|col| ret.add_column(col));
-        Ok(ret)
-    }
-    
-    fn read(&self, address: &str) -> Result<DataFrame<String>, Box<dyn Error>> {
-        let mut reader = csv::Reader::from_path(address)?;
-        let headers = reader.headers()?;
-        let mut columns: Vec<Column<String>> = Vec::with_capacity(headers.len());
-        for _ in 0..headers.len() {
-            columns.push(Column::new());
+        if headers {
+            first
+                .iter()
+                .zip(columns.iter_mut())
+                .for_each(|(header, col)| col.set_name(header.trim().to_owned()));
         }
         for rec in reader.records() {
-            rec?.iter().zip(columns.iter_mut()).for_each(|(entry, col)| col.push(entry.to_owned()));
+            for (entry, col) in rec?.iter().zip(columns.iter_mut()) {
+                if missing_values.contains(&entry) {
+                    col.push(None);
+                } else {
+                    col.push(Some(entry.trim().to_owned()));
+                }
+            }
         }
         let mut ret = DataFrame::new();
         columns.into_iter().for_each(|col| ret.add_column(col));

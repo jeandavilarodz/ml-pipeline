@@ -10,8 +10,7 @@ use std::collections::HashMap;
 use std::error::Error;
 
 pub trait Reader {
-    fn read(&self, address: &str) -> Result<DataFrame<String>, Box<dyn Error>>;
-    fn with_headers(&self, address: &str) -> Result<DataFrame<String>, Box<dyn Error>>;
+    fn read(&self, address: &str, missing_values: &Vec<&str>, headers: bool) -> Result<DataFrame<Option<String>>, Box<dyn Error>>;
 }
 
 lazy_static!{
@@ -20,16 +19,9 @@ lazy_static!{
     ]);
 }
 
-pub fn read(address: &str, format: &str) -> Result<DataFrame<String>, Box<dyn Error>> {
+pub fn read_input(address: &str, format: &str, missing_values: Vec<&str>, headers: bool) -> Result<DataFrame<Option<String>>, Box<dyn Error>>{
     if !INPUT_FORMAT_MAP.contains_key(format) {
         bail!("Invalid input format!");
     }
-    INPUT_FORMAT_MAP[format].read(address)
-}
-
-pub fn with_headers(address: &str, format: &str) -> Result<DataFrame<String>, Box<dyn Error>> {
-    if !INPUT_FORMAT_MAP.contains_key(format) {
-        bail!("Invalid input format!");
-    }
-    INPUT_FORMAT_MAP[format].with_headers(address)
+    INPUT_FORMAT_MAP[format].read(address, &missing_values, headers)
 }
