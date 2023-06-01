@@ -5,7 +5,7 @@ use pipeline::transform;
 
 
 fn main() {
-    let input = input::with_headers("datasets/test.csv", "csv");
+    let input = input::read_input("datasets/test.csv", "csv", vec!["?"], true);
     if let Err(error) = input {
         println!("{}", error.to_string());
         return;
@@ -13,10 +13,10 @@ fn main() {
 
     let input = input.unwrap();
     for col in input.columns() {
-        println!("{}", col);
+        println!("{:?}", col);
     }
 
-    let parsed = parsers::parse_input(input, vec!["nominal", "ordinal", "numerical"], vec!["?"]).expect("Could not parse input");
+    let parsed = parsers::parse_input(input, vec!["nominal", "ordinal", "numerical"]).expect("Could not parse input");
     for col in parsed.columns() {
         println!("{:?}", col);
     }

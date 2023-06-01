@@ -14,11 +14,12 @@ impl Transform for NormalizeTransform {
         }
 
         let mean = sum / (count as Numeric);
-        println!("mean: {}", mean);
 
-        let variance = column.values().fold(0 as Numeric, |acc, &n| acc + (n - mean)*(n - mean)) / (count - 1) as Numeric;
+        let variance = column
+            .values()
+            .fold(0 as Numeric, |acc, &n| acc + (n - mean) * (n - mean))
+            / (count - 1) as Numeric;
         let std_deviation = variance.sqrt();
-        println!("std_dev: {}", std_deviation);
 
         for value in column.values_mut() {
             *value = (*value - mean) / std_deviation;

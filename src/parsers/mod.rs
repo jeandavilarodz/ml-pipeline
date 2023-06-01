@@ -16,7 +16,7 @@ use lazy_static::lazy_static;
 use simple_error;
 
 pub trait Parser {
-    fn parse(&self, column: &Column<Option<&str>>) -> Column<Option<Numeric>>;
+    fn parse(&self, column: &Column<Option<String>>) -> Column<Option<Numeric>>;
 }
 
 lazy_static! {
@@ -38,7 +38,7 @@ lazy_static! {
 }
 
 pub fn parse_input(
-    table: DataFrame<Option<&str>>,
+    table: DataFrame<Option<String>>,
     parsers: Vec<&str>,
 ) -> Result<DataFrame<Option<Numeric>>, Box<dyn Error>> {
     let mut ret = DataFrame::<Option<Numeric>>::new();
