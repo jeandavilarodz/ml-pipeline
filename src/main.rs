@@ -3,7 +3,6 @@ use pipeline::parsers;
 use pipeline::scrubbers;
 use pipeline::transform;
 
-
 fn main() {
     let input = input::read_input("datasets/test.csv", "csv", vec!["?"], true);
     if let Err(error) = input {
@@ -16,7 +15,8 @@ fn main() {
         println!("{:?}", col);
     }
 
-    let parsed = parsers::parse_input(input, vec!["nominal", "ordinal", "numerical"]).expect("Could not parse input");
+    let parsed = parsers::parse_input(input, vec!["nominal", "ordinal", "numerical"])
+        .expect("Could not parse input");
     for col in parsed.columns() {
         println!("{:?}", col);
     }
@@ -32,7 +32,7 @@ fn main() {
         println!("{}", col);
     }
 
-    let result = transform::apply(&mut cleaned, vec![("normalize", 2)]);
+    let result = transform::apply(&mut cleaned, vec![("normalize", 2)], None);
     if let Err(error) = result {
         println!("{}", error.to_string());
         return;
@@ -41,5 +41,4 @@ fn main() {
     for col in cleaned.columns() {
         println!("{}", col);
     }
-
 }
