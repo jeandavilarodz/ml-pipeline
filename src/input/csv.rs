@@ -23,14 +23,14 @@ impl Reader for CsvReader {
             first
                 .iter()
                 .zip(columns.iter_mut())
-                .for_each(|(header, col)| col.set_name(header.to_owned()));
+                .for_each(|(header, col)| col.set_name(header.trim().to_owned()));
         }
         for rec in reader.records() {
             for (entry, col) in rec?.iter().zip(columns.iter_mut()) {
                 if missing_values.contains(&entry) {
                     col.push(None);
                 } else {
-                    col.push(Some(entry.to_owned()));
+                    col.push(Some(entry.trim().to_owned()));
                 }
             }
         }

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
-const DISPLAY_MAX: usize = 5;
+const DISPLAY_MAX: usize = 10;
 
 #[derive(Debug)]
 pub struct Column <T: Sized>{
