@@ -35,7 +35,7 @@ fn main() {
         println!("{}", col);
     }
     let params = HashMap::from([("num_bins", 2.0 as Numeric)]);
-    let result = transform::apply(&mut cleaned, vec![("equal-frequency-discretization", 2)], Some(params));
+    let result = transform::apply(&mut cleaned, vec![("equal-width-discretization", 2)], Some(params));
     if let Err(error) = result {
         println!("{}", error.to_string());
         return;

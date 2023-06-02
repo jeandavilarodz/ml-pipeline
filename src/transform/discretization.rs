@@ -18,6 +18,10 @@ impl Transform for EqualWidthDiscretization {
             return;
         }
 
+        if (parameters["num_bins"] as usize) < 2 {
+            return;
+        }
+
         let biggest = *column
             .values_mut()
             .max_by(|x, y| x.abs().partial_cmp(&y.abs()).unwrap())
@@ -27,11 +31,13 @@ impl Transform for EqualWidthDiscretization {
             .min_by(|x, y| x.abs().partial_cmp(&y.abs()).unwrap())
             .unwrap();
 
-        let num_bins = parameters["num_bins"];
-        let bin_range = (biggest - smallest) / num_bins;
+        let num_bins = parameters["num_bins"] as usize - 1;
+
+
+        let bin_range = (biggest - smallest) / num_bins as Numeric;
 
         for value in column.values_mut() {
-            *value = bin_range * ((*value - smallest) / bin_range).floor() + smallest;
+            *value = bin_range * (((*value - smallest) / bin_range).floor()) + smallest;
         }
     }
 }
