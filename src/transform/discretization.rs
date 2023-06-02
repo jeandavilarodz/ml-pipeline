@@ -30,10 +30,7 @@ impl Transform for EqualWidthDiscretization {
         let num_bins = parameters["num_bins"];
         let bin_range = (biggest - smallest) / num_bins;
 
-        println!("b: {} | s: {} | r: {}", biggest, smallest, bin_range);
-
         for value in column.values_mut() {
-            println!("val: {} | r: {} | s: {}", value, bin_range, smallest);
             *value = bin_range * ((*value - smallest) / bin_range).floor() + smallest;
         }
     }
