@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use super::Transform;
 use crate::data::column::Column;
 use crate::types::Numeric;
@@ -5,7 +7,7 @@ use crate::types::Numeric;
 pub struct NormalizeTransform;
 
 impl Transform for NormalizeTransform {
-    fn apply(&self, column: &mut Column<Numeric>) {
+    fn apply(&self, column: &mut Column<Numeric>, _parameters: &Option<HashMap<&str,Numeric>>) {
         let sum: f32 = column.values().sum();
         let count = column.values().count();
 
