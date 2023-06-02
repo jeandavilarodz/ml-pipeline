@@ -56,6 +56,14 @@ impl <T>Column<T> {
         }
     }
 
+    pub fn get(&self, index: usize) -> Option<&T> {
+        self.values.get(index)
+    }
+
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut T> {
+        self.values.get_mut(index)
+    }
+
     pub fn values(&self) -> std::slice::Iter<'_, T> {
         self.values.iter()
     }

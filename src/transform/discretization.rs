@@ -55,22 +55,32 @@ impl Transform for EqualFrequencyDiscretization {
         let num_bins = parameters["num_bins"] as usize;
         let max_items_per_bin = len_items / num_bins;
 
-        let mut sorted = column.values_mut().collect::<Vec<&mut Numeric>>();
-        sorted.sort_by(|x, y| x.abs().partial_cmp(&y.abs()).unwrap());
+        let mut sorted = column
+            .values()
+            .copied()
+            .enumerate()
+            .collect::<Vec<(usize, Numeric)>>();
+        sorted.sort_by(|(_, x), (_, y)| x.abs().partial_cmp(&y.abs()).unwrap());
 
         for bin_number in 0..num_bins {
             let bin_index_start = bin_number * max_items_per_bin;
-            let bin_index_end = bin_number * max_items_per_bin + max_items_per_bin;
+            let bin_index_end = bin_index_start + max_items_per_bin;
             let mean = sorted[bin_index_start..bin_index_end]
                 .iter()
-                .fold(0.0, |acc, val| acc + **val)
+                .fold(0.0, |acc,(_ , val)| acc + val)
                 / max_items_per_bin as Numeric;
-            for value in sorted[bin_index_start..bin_index_end].iter_mut() {
-                **value = mean;
+            for (idx, _) in sorted[bin_index_start..bin_index_end].iter_mut() {
+                *(column.get_mut(*idx).unwrap()) = mean;
             }
         }
-        if len_items % 2 != 0 {
-            *sorted[len_items - 1] = *sorted[len_items - 2];
+        if len_items % 2 == 1 {
+            let last_mean = sorted[(len_items - (max_items_per_bin + 1))..len_items]
+                .iter()
+                .fold(0.0, |acc, val| acc + val.1)
+                / (max_items_per_bin + 1) as Numeric;
+            for idx in (len_items - (max_items_per_bin + 1))..len_items {
+                *(column.get_mut(idx).unwrap()) = last_mean;
+            }
         }
     }
 }
