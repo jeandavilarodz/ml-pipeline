@@ -8,14 +8,14 @@ pub struct MeanScrubber;
 
 impl Scrubber for MeanScrubber {
     fn clean(&self, column: &mut Column<Option<Numeric>>) {
-        let sum: f32 = column.values().filter_map(|&value| value).sum();
+        let sum: Numeric = column.values().filter_map(|&value| value).sum();
         let count = column.values().filter_map(|&value| value).count();
 
         if count == 0 {
             return;
         }
 
-        let mean = sum / (count as f32);
+        let mean = sum / (count as Numeric);
 
         column.values_mut().for_each(|v| *v = v.or(Some(mean)));
     }

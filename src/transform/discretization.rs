@@ -24,15 +24,17 @@ impl Transform for EqualWidthDiscretization {
             .unwrap();
         let smallest = *column
             .values()
-            .min_by(|x, y| y.abs().partial_cmp(&x.abs()).unwrap())
+            .min_by(|x, y| x.abs().partial_cmp(&y.abs()).unwrap())
             .unwrap();
 
-        let bin_range = (biggest - smallest) / parameters["num_bins"];
+        let num_bins = parameters["num_bins"];
+        let bin_range = (biggest - smallest) / num_bins;
+
+        println!("b: {} | s: {} | r: {}", biggest, smallest, bin_range);
 
         for value in column.values_mut() {
-            *value = bin_range * ((*value - smallest) / bin_range).floor()
-                + smallest
-                + (bin_range / 2.0);
+            println!("val: {} | r: {} | s: {}", value, bin_range, smallest);
+            *value = bin_range * ((*value - smallest) / bin_range).floor() + smallest;
         }
     }
 }
