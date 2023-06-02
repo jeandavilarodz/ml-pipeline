@@ -18,10 +18,20 @@ pub trait Transform {
 
 lazy_static! {
     static ref TRANSFORM_TYPE_MAP: HashMap<&'static str, Box<dyn Transform + Sync>> =
-        HashMap::from([(
-            "normalize",
-            Box::new(normalize::NormalizeTransform) as Box<dyn Transform + Sync>
-        ),]);
+        HashMap::from([
+            (
+                "normalize",
+                Box::new(normalize::NormalizeTransform) as Box<dyn Transform + Sync>
+            ),
+            (
+                "equal-width-discretization",
+                Box::new(discretization::EqualWidthDiscretization) as Box<dyn Transform + Sync>
+            ),
+            (
+                "equal-frequency-discretization",
+                Box::new(discretization::EqualFrequencyDiscretization) as Box<dyn Transform + Sync>
+            )
+        ]);
 }
 
 pub fn apply(
