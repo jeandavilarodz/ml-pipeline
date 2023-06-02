@@ -81,8 +81,8 @@ impl Transform for EqualFrequencyDiscretization {
                 .iter()
                 .fold(0.0, |acc, val| acc + val.1)
                 / (max_items_per_bin + 1) as Numeric;
-            for idx in (len_items - (max_items_per_bin + 1))..len_items {
-                *(column.get_mut(idx).unwrap()) = last_mean;
+            for (idx, _) in sorted[(len_items - (max_items_per_bin + 1))..len_items].iter() {
+                *(column.get_mut(*idx).unwrap()) = last_mean;
             }
         }
     }
