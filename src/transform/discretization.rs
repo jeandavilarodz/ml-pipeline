@@ -55,6 +55,10 @@ impl Transform for EqualFrequencyDiscretization {
         let num_bins = parameters["num_bins"] as usize;
         let max_items_per_bin = len_items / num_bins;
 
+        if max_items_per_bin < 1 {
+            return;
+        }
+
         let mut sorted = column
             .values()
             .copied()
