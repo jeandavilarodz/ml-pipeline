@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use pipeline::input;
 use pipeline::parsers;
 use pipeline::scrubbers;
 use pipeline::transform;
+use pipeline::types::Numeric;
 
 fn main() {
     let input = input::read_input("datasets/test.csv", "csv", vec!["?"], true);
@@ -31,8 +34,8 @@ fn main() {
     for col in cleaned.columns() {
         println!("{}", col);
     }
-
-    let result = transform::apply(&mut cleaned, vec![("normalize", 2)], None);
+    let params = HashMap::from([("num_bins", 2.0 as Numeric)]);
+    let result = transform::apply(&mut cleaned, vec![("equal-width-discretization", 2)], Some(params));
     if let Err(error) = result {
         println!("{}", error.to_string());
         return;
