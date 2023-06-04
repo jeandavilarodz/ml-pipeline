@@ -13,7 +13,6 @@ use std::collections::HashMap;
 use std::error::Error;
 
 use lazy_static::lazy_static;
-use simple_error;
 
 pub trait Parser {
     fn parse(&self, column: &Column<Option<String>>) -> Column<Option<Numeric>>;
@@ -43,7 +42,7 @@ pub fn parse_input(
 ) -> Result<DataFrame<Option<Numeric>>, Box<dyn Error>> {
     let mut ret = DataFrame::<Option<Numeric>>::new();
     if table.columns().len() != parsers.len() {
-        simple_error::bail!("Did not provide enough parsers per table column!");
+        return Err("Did not provide enough parsers per table column!".into());
     }
 
     let missing_parser = parsers
@@ -51,7 +50,7 @@ pub fn parse_input(
         .fold(false, |acc, p| acc | !PARSE_TYPE_MAP.contains_key(p));
 
     if missing_parser {
-        simple_error::bail!("Parser type not supported!");
+        return Err("Parser type not supported!".into());
     }
 
     let mut parsed_cols: Vec<Column<Option<Numeric>>> = Vec::new();

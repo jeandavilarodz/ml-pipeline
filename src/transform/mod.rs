@@ -44,7 +44,7 @@ pub fn apply(
         .fold(false, |acc, p| acc | !TRANSFORM_TYPE_MAP.contains_key(p.0));
 
     if missing_transform {
-        simple_error::bail!("Parser type not supported!");
+        return Err("Parser type not supported!".into());
     }
 
     for (transform, idx) in transforms.into_iter() {

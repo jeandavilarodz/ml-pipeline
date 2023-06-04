@@ -7,5 +7,4 @@ edition = "2021"
 
 [dependencies]
 csv = "1.2.1"
-simple-error = "0.3.0"
 lazy_static = "1.4.0"

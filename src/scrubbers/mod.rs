@@ -8,8 +8,8 @@ use crate::types::Numeric;
 
 use std::collections::HashMap;
 use std::error::Error;
+
 use lazy_static::lazy_static;
-use simple_error;
 
 trait Scrubber {
     fn clean(&self, column: &mut Column<Option<Numeric>>);
@@ -27,7 +27,7 @@ pub fn scrub(table: DataFrame<Option<Numeric>>, scrubbers: Vec<(&str, usize)>) -
         .fold(false, |acc, p| acc | !SCRUBBER_TYPE_MAP.contains_key(p.0));
 
     if missing_parser {
-        simple_error::bail!("Parser type not supported!");
+        return Err("Scrubber type not supported!".into());
     }
 
     let mut table = table;
