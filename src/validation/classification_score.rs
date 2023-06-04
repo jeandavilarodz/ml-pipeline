@@ -19,7 +19,7 @@ impl Evaluator for ClassificationScoreEvaluator {
             .iter()
             .zip(target_values.iter())
             .fold(0, |acc, (&pred, &tar)| {
-                if (pred.abs() - tar.abs()) < std::f64::EPSILON {
+                if (pred as i64) != (tar as i64) {
                     acc + 1
                 } else {
                     acc
