@@ -1,5 +1,6 @@
 //! This contains the abstractions for all the ML models
 
+mod classification_score;
 mod mse;
 
 use crate::types::Numeric;
@@ -20,6 +21,10 @@ lazy_static! {
                 "MSE",
                 Box::new(mse::MeanSquaredErrorEvaluator) as Box<dyn Evaluator + Sync>
             ),
+            (
+                "classification-score",
+                Box::new(classification_score::ClassificationScoreEvaluator) as Box<dyn Evaluator + Sync>
+            )
         ]);
 }
 
