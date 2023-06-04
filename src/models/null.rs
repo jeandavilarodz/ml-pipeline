@@ -1,4 +1,5 @@
 use super::Model;
+use super::ModelFactory;
 
 use crate::types::Numeric;
 
@@ -10,7 +11,19 @@ pub struct NullModel {
 }
 
 impl Model for NullModel {
-    fn from_training(_training_values: &[&[Numeric]], target_values: &[Numeric]) -> Self {
+    fn predict(&self, _sample: &[Numeric]) -> Result<Numeric, Box<dyn Error>> {
+        Ok(self.value_to_replace)
+    }
+}
+
+pub struct NullModelFactory;
+
+impl ModelFactory for NullModelFactory {
+    fn from_training(
+        &self,
+        _training_values: &[&[Numeric]],
+        target_values: &[Numeric],
+    ) -> Result<Box<dyn Model>, Box<dyn Error>> {
         let mut value_count = HashMap::new();
 
         for &value in target_values {
@@ -18,16 +31,14 @@ impl Model for NullModel {
             *counter += 1;
         }
 
-        Self {
-            value_to_replace: value_count
-                .iter()
-                .max_by_key(|&(_, count)| count)
-                .map(|(val, _)| val)
-                .expect("Mode not found!"),
-        }
-    }
+        let mode = value_count
+            .iter()
+            .max_by_key(|&(_, count)| count)
+            .map(|(val, _)| val)
+            .ok_or("No mode found!")?;
 
-    fn predict(&self, sample: &[Numeric]) -> Result<Numeric, Box<dyn Error>> {
-        Ok(self.value_to_replace)
+        Ok(Box::new(NullModel {
+            value_to_replace: *mode as Numeric,
+        }))
     }
 }
