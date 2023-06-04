@@ -19,6 +19,7 @@ pub trait ModelFactory {
         training_values: &[&[Numeric]],
         target_values: &[Numeric],
     ) -> Result<Box<dyn Model>, Box<dyn Error>>;
+    // FUTURE WORK: Maybe a add a method to generate a model from a description of hyperparameters
 }
 
 lazy_static! {
