@@ -14,7 +14,8 @@ impl Model for NullModel {
         let mut value_count = HashMap::new();
         
         for &value in target_values {
-            *value_count.entry(value as i64).or_insert(0) += 1;
+            let counter = value_count.entry(value as i64).or_insert(0);
+            *counter += 1;
         }
         
         Self {
