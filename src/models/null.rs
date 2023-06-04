@@ -7,12 +7,12 @@ use std::collections::HashMap;
 use std::error::Error;
 
 pub struct NullModel {
-    value_to_replace: Numeric,
+    return_value: Numeric,
 }
 
 impl Model for NullModel {
     fn predict(&self, _sample: &[Numeric]) -> Result<Numeric, Box<dyn Error>> {
-        Ok(self.value_to_replace)
+        Ok(self.return_value)
     }
 }
 
@@ -38,7 +38,23 @@ impl ModelFactory for NullModelFactory {
             .ok_or("No mode found!")?;
 
         Ok(Box::new(NullModel {
-            value_to_replace: *mode as Numeric,
+            return_value: *mode as Numeric,
+        }))
+    }
+}
+
+pub struct NullRegressionModelFactory;
+
+impl ModelFactory for NullRegressionModelFactory {
+    fn from_training(
+        &self,
+        _training_values: &[&[Numeric]],
+        target_values: &[Numeric],
+    ) -> Result<Box<dyn Model>, Box<dyn Error>> {
+        let mean = target_values.iter().fold(0.0, |acc, &val| acc + val) / target_values.len() as Numeric;
+
+        Ok(Box::new(NullModel {
+            return_value: mean,
         }))
     }
 }
