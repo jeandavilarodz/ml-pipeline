@@ -1,5 +1,6 @@
 use crate::data::column::Column;
 use std::collections::HashMap;
+use std::fmt;
 
 #[derive(Debug)]
 pub struct DataFrame<T: Sized> {
@@ -50,5 +51,49 @@ impl<T> DataFrame<T> {
             Some(idx) => self.columns.get_mut(*idx),
             _ => None
         }
+    }
+}
+
+impl<T> fmt::Display for DataFrame<T>
+where T: fmt::Display
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let num_rows = self.columns().last().unwrap().values().len();
+        let num_cols = self.columns().len();
+    
+        for column in self.columns.iter() {
+            write!(f, "|")?;
+            match column.get_name() {
+                Some(name) => write!(f, "{name:-^20}")?,
+                _ => write!(f, " {:-^20} ", "N/A")?,
+            }
+        }
+        write!(f, "|\n")?;
+
+
+
+        let stop = num_rows.min(10);
+        for idx in 0..stop-1 {
+            for column in self.columns() {
+                write!(f, "|")?;
+                match column.get(idx) {
+                    Some(val) => write!(f, "{val:<20}")?,
+                    None => write!(f, "{:<20}", "None")?,
+                }
+            }
+            write!(f, "|\n")?;
+        }
+        if num_rows > 10 {
+            for _ in 0..num_cols {
+                write!(f, "|{:^20}", "...")?;
+            }
+            write!(f, "|\n")?;
+        }
+        for column in self.columns() {
+            let val = column.values().last().unwrap();
+            write!(f, "|{val:<20}")?;
+        }
+        write!(f, "|\n")?;
+        Ok(())
     }
 }
