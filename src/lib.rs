@@ -4,4 +4,5 @@ pub mod parsers;
 pub mod models;
 pub mod scrubbers;
 pub mod transform;
+pub mod validation;
 pub mod types;
