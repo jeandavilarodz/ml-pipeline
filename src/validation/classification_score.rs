@@ -19,7 +19,8 @@ impl Evaluator for ClassificationScoreEvaluator {
             .iter()
             .zip(target_values.iter())
             .fold(0, |acc, (&pred, &tar)| {
-                if (pred as i64) != (tar as i64) {
+                // If class values are the same they should be close to zero
+                if (pred - tar).abs() < 1e-8 {
                     acc + 1
                 } else {
                     acc
