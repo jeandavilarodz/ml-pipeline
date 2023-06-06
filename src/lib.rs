@@ -5,4 +5,5 @@ pub mod models;
 pub mod scrubbers;
 pub mod transform;
 pub mod evaluation;
+pub mod validation;
 pub mod types;
