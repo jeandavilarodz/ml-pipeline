@@ -94,6 +94,10 @@ where T: fmt::Display
             write!(f, "|{val:<20}")?;
         }
         write!(f, "|\n")?;
+        for _ in 0..num_cols {
+            write!(f, "{:-<21}", "|")?;
+        }
+        write!(f, "|\n")?;
         Ok(())
     }
 }

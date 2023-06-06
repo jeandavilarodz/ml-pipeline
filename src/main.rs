@@ -31,11 +31,10 @@ fn main() {
     }
 
     let mut cleaned = cleaned.unwrap();
-    for col in cleaned.columns() {
-        println!("{}", col);
-    }
-    let params = HashMap::from([("num_bins", 4.0 as Numeric)]);
-    let result = transform::apply(&mut cleaned, vec![("equal-width-discretization", 2)], Some(params));
+    println!("{}", cleaned);
+
+    let params = HashMap::from([("num_bins", 2.0 as Numeric)]);
+    let result = transform::apply(&mut cleaned, vec![("equal-frequency-discretization", 2)], Some(params));
     if let Err(error) = result {
         println!("{}", error.to_string());
         return;
