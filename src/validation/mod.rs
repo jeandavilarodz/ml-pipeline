@@ -1,1 +1,2 @@
-pub mod cross_stratified;
+pub mod kfold_stratified;
+pub mod kfold;

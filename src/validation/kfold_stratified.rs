@@ -7,9 +7,9 @@ use std::error::Error;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
-pub struct StratifiedCrossValidation;
+pub struct StratifiedKFold;
 
-impl StratifiedCrossValidation {
+impl StratifiedKFold {
     pub fn partition(
         table: &DataFrame<Numeric>,
         target_idx: usize,
@@ -29,15 +29,22 @@ impl StratifiedCrossValidation {
         }
 
         // Shuffle indexes in each vector
-        class_indices.values_mut().for_each(|indices| indices.shuffle(&mut thread_rng()));
+        class_indices
+            .values_mut()
+            .for_each(|indices| indices.shuffle(&mut thread_rng()));
 
         for (category, class_list) in class_indices.iter() {
-            println!("cat: {} | n: {} | p: {}", category, class_list.len(), 100.0 * class_list.len() as f32 / target_values.values().len() as f32);
+            println!(
+                "cat: {} | n: {} | p: {}",
+                category,
+                class_list.len(),
+                100.0 * class_list.len() as f32 / target_values.values().len() as f32
+            );
         }
 
         let mut ret = Vec::with_capacity(k);
 
-        for idx in 0..k-1 {
+        for idx in 0..k - 1 {
             println!("FOLD: {}", idx + 1);
             let mut validation_indices = Vec::new();
             let mut training_indices = Vec::new();
@@ -51,7 +58,12 @@ impl StratifiedCrossValidation {
                 class_sizes.push(indexes[0..start].len() + indexes[end..].len());
             }
             for (class_idx, class_size) in class_sizes.into_iter().enumerate() {
-                println!("cat: {} | n: {} | p: {}", class_idx, class_size, 100.0 * class_size as f32 / training_indices.len() as f32);
+                println!(
+                    "cat: {} | n: {} | p: {}",
+                    class_idx,
+                    class_size,
+                    100.0 * class_size as f32 / training_indices.len() as f32
+                );
             }
             ret.push((training_indices, validation_indices));
         }
@@ -61,7 +73,7 @@ impl StratifiedCrossValidation {
         let mut class_sizes = Vec::new();
         println!("FOLD: {}", k);
         for (_class_idx, indexes) in class_indices.iter() {
-            let fold_size = (indexes.len() / k) + (indexes.len() %  (indexes.len() / k));
+            let fold_size = (indexes.len() / k) + (indexes.len() % (indexes.len() / k));
             let end = indexes.len();
             let start = end - fold_size;
             validation_indices.extend(indexes[start..end].to_vec());
@@ -69,10 +81,15 @@ impl StratifiedCrossValidation {
             class_sizes.push(indexes[0..start].len());
         }
         for (class_idx, class_size) in class_sizes.into_iter().enumerate() {
-            println!("cat: {} | n: {} | p: {}", class_idx, class_size, 100.0 * class_size as f32 / training_indices.len() as f32);
+            println!(
+                "cat: {} | n: {} | p: {}",
+                class_idx,
+                class_size,
+                100.0 * class_size as f32 / training_indices.len() as f32
+            );
         }
         ret.push((training_indices, validation_indices));
-                                                    
+
         Ok(ret)
     }
 }

@@ -4,7 +4,7 @@ use pipeline::input;
 use pipeline::parsers;
 use pipeline::scrubbers;
 use pipeline::transform;
-use pipeline::validation::cross_stratified::StratifiedCrossValidation;
+use pipeline::validation::kfold_stratified::StratifiedKFold;
 use pipeline::types::Numeric;
 
 fn main() {
@@ -46,7 +46,7 @@ fn main() {
         println!("{}", col);
     }
 
-    let folds = StratifiedCrossValidation::partition(&cleaned, 6, 10).unwrap();
+    let folds = StratifiedKFold::partition(&cleaned, 6, 10).unwrap();
 
     for (fold_idx, (train_indices, validation_indices)) in folds.iter().enumerate() {
         println!("FOLD #: {}", fold_idx);
