@@ -7,8 +7,6 @@ use std::error::Error;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
-use itertools::Itertools;
-
 pub struct StratifiedCrossValidation;
 
 impl StratifiedCrossValidation {
@@ -79,15 +77,17 @@ impl StratifiedCrossValidation {
         training_set.push(training_indices);
 
         for (train_indices, validation_indices) in training_set.iter().zip(validation_set.iter()) {
-            let train_data: Vec<Vec<&Numeric>> = train_indices.iter().map(|&i| table.columns().filter_map(|col | col.get(i)).collect_vec()).collect();
-            let validation_data: Vec<Vec<&Numeric>> = validation_indices.iter().map(|&i| table.columns().filter_map(|col | col.get(i)).collect_vec()).collect();
             println!("TRAINING");
-            println!("{:?}", train_data);
-            println!("TRAINING SIZE: {}", train_data.len());
+            for idx in train_indices {
+                println!("{:?}", table.get_row(*idx));
+            }
+            println!("TRAINING SIZE: {}", train_indices.len());
 
             println!("VALIDATION");
-            println!("{:?}", validation_data);
-            println!("VALIDATION SIZE: {}", validation_data.len());
+            for idx in validation_indices {
+                println!("{:?}", table.get_row(*idx));
+            }
+            println!("VALIDATION SIZE: {}", validation_indices.len());
         }
                                                     
         Ok(())
