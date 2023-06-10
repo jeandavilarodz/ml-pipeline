@@ -43,7 +43,7 @@ impl ModelFactory for NullModelFactory {
             .ok_or("No mode found!")?;
 
         Ok(Box::new(NullModel {
-            return_value: Numeric::from(1e-8 * (*mode as f64)),
+            return_value: (1e-8 * (*mode as f64)),
         }))
     }
 }
@@ -62,7 +62,7 @@ impl ModelFactory for NullRegressionModelFactory {
             / target_values.len() as f64;
 
         Ok(Box::new(NullModel {
-            return_value: Numeric::from(mean),
+            return_value: mean,
         }))
     }
 }

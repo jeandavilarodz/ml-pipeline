@@ -12,7 +12,7 @@ pub trait Reader {
     fn read(
         &self,
         address: &str,
-        missing_values: &Vec<&str>,
+        missing_values: &[&str],
         headers: bool,
     ) -> Result<DataFrame<Option<String>>, Box<dyn Error>>;
 }

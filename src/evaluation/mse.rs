@@ -20,7 +20,7 @@ impl Evaluator for MeanSquaredErrorEvaluator {
         let mse = predictions
             .iter()
             .zip(target_values.iter())
-            .fold(Numeric::from(0.0), |acc, (&pred, &tar)| {
+            .fold(0.0, |acc, (&pred, &tar)| {
                 acc + (tar - pred) * (tar - pred)
             })
             / target_values.len() as f64;

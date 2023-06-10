@@ -10,7 +10,7 @@ use pipeline::validation::kfold_stratified::StratifiedKFold;
 fn main() {
     let input = input::read_input("datasets/car.data", "csv", vec!["none"], false);
     if let Err(error) = input {
-        println!("{}", error.to_string());
+        println!("{}", error);
         return;
     }
 
@@ -32,7 +32,7 @@ fn main() {
 
     let cleaned = scrubbers::scrub(parsed, vec![]);
     if let Err(error) = cleaned {
-        println!("{}", error.to_string());
+        println!("{}", error);
         return;
     }
 
@@ -47,7 +47,7 @@ fn main() {
         Some(params),
     );
     if let Err(error) = result {
-        println!("{}", error.to_string());
+        println!("{}", error);
         return;
     }
 
@@ -63,14 +63,14 @@ fn main() {
         for &idx in train_indices {
             print!("{:?}, ", cleaned.get_row(idx));
         }
-        print!("\n");
+        println!();
         println!("TRAINING SIZE: {}", train_indices.len());
 
         println!("VALIDATION");
         for &idx in validation_indices {
             print!("{:?}, ", cleaned.get_row(idx));
         }
-        print!("\n");
+        println!();
         println!("VALIDATION SIZE: {}", validation_indices.len());
     }
 }

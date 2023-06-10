@@ -44,5 +44,5 @@ pub fn from_training(
     if !MODEL_REPOSITORY.contains_key(model_name) {
         return Err("Model not supported!".into());
     }
-    Ok(MODEL_REPOSITORY[model_name].from_training(training_features, target_values)?)
+    MODEL_REPOSITORY[model_name].from_training(training_features, target_values)
 }

@@ -9,6 +9,12 @@ pub struct DataFrame<T: Sized> {
     column_idx_map: HashMap<String, usize>,
 }
 
+impl<T> Default for DataFrame<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> DataFrame<T> {
     pub fn new() -> Self {
         Self {

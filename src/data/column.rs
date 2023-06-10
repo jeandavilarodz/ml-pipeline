@@ -10,6 +10,12 @@ pub struct Column<T: Sized> {
     values: Vec<T>,
 }
 
+impl<T> Default for Column<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> Column<T> {
     pub fn new() -> Self {
         Self {
@@ -24,10 +30,10 @@ impl<T> Column<T> {
     }
 
     pub fn get_name(&self) -> Option<&str> {
-        return match &self.name {
-            Some(name) => Some(&name),
+        match &self.name {
+            Some(name) => Some(name),
             None => None,
-        };
+        }
     }
 
     pub fn append(&mut self, values: Vec<T>) {
@@ -50,10 +56,10 @@ impl<T> Column<T> {
     }
 
     pub fn get_metadata(&self) -> Option<&HashMap<u32, String>> {
-        return match &self.metadata {
-            Some(metadata) => Some(&metadata),
+        match &self.metadata {
+            Some(metadata) => Some(metadata),
             None => None,
-        };
+        }
     }
 
     pub fn get(&self, index: usize) -> Option<&T> {
@@ -83,20 +89,20 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.name {
-            Some(name) => write!(f, "{:-^16}\n", name)?,
-            _ => write!(f, "{:-^16}\n", "N/A")?,
+            Some(name) => writeln!(f, "{:-^16}", name)?,
+            _ => writeln!(f, "{:-^16}", "N/A")?,
         }
         if self.values.len() <= DISPLAY_MAX {
             for val in self.values.iter() {
-                write!(f, "{:?}\n", val)?;
+                writeln!(f, "{:?}", val)?;
             }
             return Ok(());
         }
         for val in self.values[0..(DISPLAY_MAX - 1)].iter() {
-            write!(f, "{:?}\n", val)?;
+            writeln!(f, "{:?}", val)?;
         }
-        write!(f, "{}\n", "...")?;
-        write!(f, "{:?}\n", self.values.last().unwrap())?;
-        return Ok(());
+        writeln!(f, "...")?;
+        writeln!(f, "{:?}", self.values.last().unwrap())?;
+        Ok(())
     }
 }

@@ -14,7 +14,7 @@ impl Transform for NormalizeTransform {
         column: &mut Column<Numeric>,
         _parameters: &Option<HashMap<&str, Numeric>>,
     ) -> Result<(), Box<dyn Error>> {
-        let sum = column.values().fold(Numeric::from(0.0), |acc, &v| acc + v);
+        let sum = column.values().fold(0.0, |acc, &v| acc + v);
         let count = column.values().count();
 
         if count == 0 {
@@ -25,7 +25,7 @@ impl Transform for NormalizeTransform {
 
         let variance = column
             .values()
-            .fold(Numeric::from(0.0), |acc, &n| acc + (n - mean) * (n - mean))
+            .fold(0.0, |acc, &n| acc + (n - mean) * (n - mean))
             / ((count - 1) as f64);
         let std_deviation = variance.sqrt();
 

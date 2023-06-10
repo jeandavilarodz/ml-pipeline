@@ -13,7 +13,7 @@ impl Parser for NumericalParser {
     ) -> Result<Column<Option<Numeric>>, Box<dyn Error>> {
         let mut ret = Column::<Option<Numeric>>::new();
         for value in column.values() {
-            ret.push(value.as_ref().map(|v| v.parse::<Numeric>().ok()).flatten());
+            ret.push(value.as_ref().and_then(|v| v.parse::<Numeric>().ok()));
         }
         Ok(ret)
     }

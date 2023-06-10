@@ -85,16 +85,16 @@ impl Transform for EqualFrequencyDiscretization {
             let bin_index_end = bin_index_start + max_items_per_bin;
             let mean = sorted[bin_index_start..bin_index_end]
                 .iter()
-                .fold(Numeric::from(0.0), |acc, (_, val)| acc + val)
+                .fold(0.0, |acc, (_, val)| acc + val)
                 / max_items_per_bin as f64;
             for (idx, _) in sorted[bin_index_start..bin_index_end].iter_mut() {
-                *(column.get_mut(*idx).unwrap()) = Numeric::from(mean);
+                *(column.get_mut(*idx).unwrap()) = mean;
             }
         }
         if len_items % 2 == 1 {
             let last_mean = sorted[(len_items - (max_items_per_bin + 1))..len_items]
                 .iter()
-                .fold(Numeric::from(0.0), |acc, val| acc + val.1)
+                .fold(0.0, |acc, val| acc + val.1)
                 / (max_items_per_bin + 1) as f64;
             for (idx, _) in sorted[(len_items - (max_items_per_bin + 1))..len_items].iter() {
                 *(column.get_mut(*idx).unwrap()) = last_mean;
