@@ -14,7 +14,7 @@ impl StratifiedCrossValidation {
         table: &DataFrame<Numeric>,
         target_idx: usize,
         k: usize,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<Vec<(Vec<usize>, Vec<usize>)>, Box<dyn Error>> {
         if table.get_column_idx(target_idx).is_none() {
             return Err("Couldn't find index of column of target value!".into());
         }
@@ -35,8 +35,7 @@ impl StratifiedCrossValidation {
             println!("cat: {} | n: {} | p: {}", category, class_list.len(), 100.0 * class_list.len() as f32 / target_values.values().len() as f32);
         }
 
-        let mut validation_set: Vec<Vec<usize>> = Vec::with_capacity(k);
-        let mut training_set: Vec<Vec<usize>> = Vec::with_capacity(k);
+        let mut ret = Vec::with_capacity(k);
 
         for idx in 0..k-1 {
             println!("FOLD: {}", idx + 1);
@@ -54,8 +53,7 @@ impl StratifiedCrossValidation {
             for (class_idx, class_size) in class_sizes.into_iter().enumerate() {
                 println!("cat: {} | n: {} | p: {}", class_idx, class_size, 100.0 * class_size as f32 / training_indices.len() as f32);
             }
-            validation_set.push(validation_indices);
-            training_set.push(training_indices);
+            ret.push((training_indices, validation_indices));
         }
 
         let mut validation_indices = Vec::new();
@@ -73,23 +71,8 @@ impl StratifiedCrossValidation {
         for (class_idx, class_size) in class_sizes.into_iter().enumerate() {
             println!("cat: {} | n: {} | p: {}", class_idx, class_size, 100.0 * class_size as f32 / training_indices.len() as f32);
         }
-        validation_set.push(validation_indices);
-        training_set.push(training_indices);
-
-        for (train_indices, validation_indices) in training_set.iter().zip(validation_set.iter()) {
-            println!("TRAINING");
-            for idx in train_indices {
-                println!("{:?}", table.get_row(*idx));
-            }
-            println!("TRAINING SIZE: {}", train_indices.len());
-
-            println!("VALIDATION");
-            for idx in validation_indices {
-                println!("{:?}", table.get_row(*idx));
-            }
-            println!("VALIDATION SIZE: {}", validation_indices.len());
-        }
+        ret.push((training_indices, validation_indices));
                                                     
-        Ok(())
+        Ok(ret)
     }
 }

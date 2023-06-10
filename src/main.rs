@@ -46,9 +46,22 @@ fn main() {
         println!("{}", col);
     }
 
-    let result = StratifiedCrossValidation::partition(&cleaned, 6, 10);
-    if let Err(error) = result {
-        println!("{}", error.to_string());
-        return;
+    let folds = StratifiedCrossValidation::partition(&cleaned, 6, 10).unwrap();
+
+    for (fold_idx, (train_indices, validation_indices)) in folds.iter().enumerate() {
+        println!("FOLD #: {}", fold_idx);
+        println!("TRAINING");
+        for &idx in train_indices {
+            print!("{:?}, ", cleaned.get_row(idx));
+        }
+        print!("\n");
+        println!("TRAINING SIZE: {}", train_indices.len());
+
+        println!("VALIDATION");
+        for &idx in validation_indices {
+            print!("{:?}, ", cleaned.get_row(idx));
+        }
+        print!("\n");
+        println!("VALIDATION SIZE: {}", validation_indices.len());
     }
 }
