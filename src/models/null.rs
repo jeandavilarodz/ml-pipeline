@@ -21,7 +21,7 @@ impl Model for NullModel {
 pub struct NullModelFactory;
 
 impl ModelFactory for NullModelFactory {
-    fn from_training(
+    fn build(
         &self,
         _training_values: &[&[Numeric]],
         target_values: &[Numeric],
@@ -51,7 +51,7 @@ impl ModelFactory for NullModelFactory {
 pub struct NullRegressionModelFactory;
 
 impl ModelFactory for NullRegressionModelFactory {
-    fn from_training(
+    fn build(
         &self,
         _training_values: &[&[Numeric]],
         target_values: &[Numeric],

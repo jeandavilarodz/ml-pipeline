@@ -14,7 +14,7 @@ pub trait Model {
 }
 
 pub trait ModelFactory {
-    fn from_training(
+    fn build(
         &self,
         training_values: &[&[Numeric]],
         target_values: &[Numeric],
@@ -44,5 +44,5 @@ pub fn from_training(
     if !MODEL_REPOSITORY.contains_key(model_name) {
         return Err("Model not supported!".into());
     }
-    MODEL_REPOSITORY[model_name].from_training(training_features, target_values)
+    MODEL_REPOSITORY[model_name].build(training_features, target_values)
 }
