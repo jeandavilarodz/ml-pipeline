@@ -13,7 +13,11 @@ use std::error::Error;
 use lazy_static::lazy_static;
 
 pub trait Transform {
-    fn apply(&self, column: &mut Column<Numeric>, parameters: &Option<HashMap<&str, Numeric>>) -> Result<(), Box<dyn Error>>;
+    fn apply(
+        &self,
+        column: &mut Column<Numeric>,
+        parameters: &Option<HashMap<&str, Numeric>>,
+    ) -> Result<(), Box<dyn Error>>;
 }
 
 lazy_static! {
@@ -50,7 +54,7 @@ pub fn apply(
     for (transform, idx) in transforms.into_iter() {
         let operation = &TRANSFORM_TYPE_MAP[transform];
         if let Some(column) = table.get_column_idx_mut(idx) {
-            operation.apply(column,&parameters)?;
+            operation.apply(column, &parameters)?;
         }
     }
 

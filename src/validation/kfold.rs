@@ -42,10 +42,7 @@ impl KFold {
         // Generate indeces for last fold. Also making the fold use the remainder values.
         let fold_size = (num_samples / k) + (num_samples % k);
         let start = num_samples - fold_size;
-        ret.push((
-            indexes[0..start].to_vec(),
-            indexes[start..].to_vec(),
-        ));
+        ret.push((indexes[0..start].to_vec(), indexes[start..].to_vec()));
 
         Ok(ret)
     }

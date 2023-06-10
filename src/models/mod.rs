@@ -24,14 +24,16 @@ pub trait ModelFactory {
 
 lazy_static! {
     static ref MODEL_REPOSITORY: HashMap<&'static str, Box<dyn ModelFactory + Sync>> =
-        HashMap::from([(
-            "null-classifier",
-            Box::new(null::NullModelFactory) as Box<dyn ModelFactory + Sync>
-        ),
-        (
-            "null-regression",
-            Box::new(null::NullRegressionModelFactory) as Box<dyn ModelFactory + Sync>
-        )]);
+        HashMap::from([
+            (
+                "null-classifier",
+                Box::new(null::NullModelFactory) as Box<dyn ModelFactory + Sync>
+            ),
+            (
+                "null-regression",
+                Box::new(null::NullRegressionModelFactory) as Box<dyn ModelFactory + Sync>
+            )
+        ]);
 }
 
 pub fn from_training(

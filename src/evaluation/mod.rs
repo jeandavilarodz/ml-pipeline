@@ -11,7 +11,11 @@ use std::error::Error;
 use lazy_static::lazy_static;
 
 pub trait Evaluator {
-    fn evaluate(&self, predictions: &[Numeric], target_values: &[Numeric]) -> Result<f64, Box<dyn Error>>;
+    fn evaluate(
+        &self,
+        predictions: &[Numeric],
+        target_values: &[Numeric],
+    ) -> Result<f64, Box<dyn Error>>;
 }
 
 lazy_static! {
@@ -23,7 +27,8 @@ lazy_static! {
             ),
             (
                 "classification-score",
-                Box::new(classification_score::ClassificationScoreEvaluator) as Box<dyn Evaluator + Sync>
+                Box::new(classification_score::ClassificationScoreEvaluator)
+                    as Box<dyn Evaluator + Sync>
             )
         ]);
 }

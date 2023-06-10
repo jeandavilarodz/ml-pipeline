@@ -15,7 +15,10 @@ use std::error::Error;
 use lazy_static::lazy_static;
 
 pub trait Parser {
-    fn parse(&self, column: &Column<Option<String>>) -> Result<Column<Option<Numeric>>, Box<dyn Error>>;
+    fn parse(
+        &self,
+        column: &Column<Option<String>>,
+    ) -> Result<Column<Option<Numeric>>, Box<dyn Error>>;
 }
 
 lazy_static! {

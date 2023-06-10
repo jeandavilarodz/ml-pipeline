@@ -1,8 +1,8 @@
 // numerical.rs
 
+use super::Parser;
 use crate::data::column::Column;
 use crate::types::Numeric;
-use super::Parser;
 
 use std::collections::HashMap;
 use std::error::Error;
@@ -10,7 +10,10 @@ use std::error::Error;
 pub struct NominalParser;
 
 impl Parser for NominalParser {
-    fn parse(&self, column: &Column<Option<String>>) -> Result<Column<Option<Numeric>>, Box<dyn Error>> {
+    fn parse(
+        &self,
+        column: &Column<Option<String>>,
+    ) -> Result<Column<Option<Numeric>>, Box<dyn Error>> {
         let mut ret = Column::<Option<Numeric>>::new();
         let mut map = HashMap::<String, u32>::new();
         let mut next_bitshift = 0;
@@ -18,8 +21,7 @@ impl Parser for NominalParser {
             let parsed = value.as_ref().map(|value| {
                 if let Some(found) = map.get(value) {
                     Numeric::from(*found)
-                }
-                else {
+                } else {
                     let coding = 1 << next_bitshift;
                     map.insert(value.to_owned(), coding);
                     next_bitshift += 1;

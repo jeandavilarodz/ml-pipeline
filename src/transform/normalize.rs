@@ -9,7 +9,11 @@ use std::error::Error;
 pub struct NormalizeTransform;
 
 impl Transform for NormalizeTransform {
-    fn apply(&self, column: &mut Column<Numeric>, _parameters: &Option<HashMap<&str,Numeric>>) -> Result<(), Box<dyn Error>> {
+    fn apply(
+        &self,
+        column: &mut Column<Numeric>,
+        _parameters: &Option<HashMap<&str, Numeric>>,
+    ) -> Result<(), Box<dyn Error>> {
         let sum = column.values().fold(Numeric::from(0.0), |acc, &v| acc + v);
         let count = column.values().count();
 

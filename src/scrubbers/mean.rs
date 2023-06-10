@@ -13,8 +13,8 @@ impl Scrubber for MeanScrubber {
             .values()
             .filter_map(|&value| value)
             .fold(Numeric::from(0.0), |acc, v| acc + v);
-        
-        // Grab number of all elements that are not None 
+
+        // Grab number of all elements that are not None
         let count = column.values().filter_map(|&value| value).count();
 
         if count == 0 {

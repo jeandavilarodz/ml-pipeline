@@ -17,16 +17,14 @@ impl Parser for OrdinalParser {
         let mut ret = Column::<Option<Numeric>>::new();
         let mut map = Vec::<String>::new();
         for value in column.values() {
-            let parsed = value
-                .as_ref()
-                .map(|val| {
-                    if let Some(found) = map.iter().position(|v| v == val) {
-                        Numeric::from(found as u32)
-                    } else {
-                        map.push(val.to_owned());
-                        Numeric::from((map.len() - 1) as u32)
-                    }
-                });
+            let parsed = value.as_ref().map(|val| {
+                if let Some(found) = map.iter().position(|v| v == val) {
+                    Numeric::from(found as u32)
+                } else {
+                    map.push(val.to_owned());
+                    Numeric::from((map.len() - 1) as u32)
+                }
+            });
             ret.push(parsed);
         }
         let mut value_map = HashMap::<u32, String>::new();

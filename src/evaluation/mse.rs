@@ -20,7 +20,9 @@ impl Evaluator for MeanSquaredErrorEvaluator {
         let mse = predictions
             .iter()
             .zip(target_values.iter())
-            .fold(Numeric::from(0.0), |acc, (&pred, &tar)| acc + (tar - pred) * (tar - pred))
+            .fold(Numeric::from(0.0), |acc, (&pred, &tar)| {
+                acc + (tar - pred) * (tar - pred)
+            })
             / target_values.len() as f64;
         Ok(mse.to_f64().ok_or("Could not transform numeric to f64")?)
     }

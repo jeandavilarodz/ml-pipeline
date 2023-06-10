@@ -2,8 +2,8 @@
 
 mod mean;
 
-use crate::data::data_frame::DataFrame;
 use crate::data::column::Column;
+use crate::data::data_frame::DataFrame;
 use crate::types::Numeric;
 
 use std::collections::HashMap;
@@ -15,13 +15,18 @@ trait Scrubber {
     fn clean(&self, column: &mut Column<Option<Numeric>>);
 }
 
-lazy_static!{
-    static ref SCRUBBER_TYPE_MAP: HashMap<&'static str, Box<dyn Scrubber + Sync>> = HashMap::from([
-        ("mean", Box::new(mean::MeanScrubber) as Box<dyn Scrubber + Sync>),
-    ]);
+lazy_static! {
+    static ref SCRUBBER_TYPE_MAP: HashMap<&'static str, Box<dyn Scrubber + Sync>> =
+        HashMap::from([(
+            "mean",
+            Box::new(mean::MeanScrubber) as Box<dyn Scrubber + Sync>
+        ),]);
 }
 
-pub fn scrub(table: DataFrame<Option<Numeric>>, scrubbers: Vec<(&str, usize)>) -> Result<DataFrame<Numeric>, Box<dyn Error>> {
+pub fn scrub(
+    table: DataFrame<Option<Numeric>>,
+    scrubbers: Vec<(&str, usize)>,
+) -> Result<DataFrame<Numeric>, Box<dyn Error>> {
     let missing_parser = scrubbers
         .iter()
         .fold(false, |acc, p| acc | !SCRUBBER_TYPE_MAP.contains_key(p.0));
@@ -66,6 +71,6 @@ pub fn scrub(table: DataFrame<Option<Numeric>>, scrubbers: Vec<(&str, usize)>) -
         clean_col.append(column.values().filter_map(|x| *x).collect());
         ret.add_column(clean_col);
     }
-    
+
     Ok(ret)
 }

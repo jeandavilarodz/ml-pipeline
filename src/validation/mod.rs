@@ -1,2 +1,2 @@
-pub mod kfold_stratified;
 pub mod kfold;
+pub mod kfold_stratified;

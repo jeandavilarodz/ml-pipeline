@@ -4,8 +4,8 @@ use pipeline::input;
 use pipeline::parsers;
 use pipeline::scrubbers;
 use pipeline::transform;
-use pipeline::validation::kfold_stratified::StratifiedKFold;
 use pipeline::types::Numeric;
+use pipeline::validation::kfold_stratified::StratifiedKFold;
 
 fn main() {
     let input = input::read_input("datasets/car.data", "csv", vec!["none"], false);
@@ -19,8 +19,13 @@ fn main() {
         println!("{}", col);
     }
 
-    let parsed = parsers::parse_input(input, vec!["ordinal", "ordinal", "ordinal", "ordinal", "ordinal", "ordinal", "ordinal"])
-        .expect("Could not parse input");
+    let parsed = parsers::parse_input(
+        input,
+        vec![
+            "ordinal", "ordinal", "ordinal", "ordinal", "ordinal", "ordinal", "ordinal",
+        ],
+    )
+    .expect("Could not parse input");
     for col in parsed.columns() {
         println!("{}", col);
     }
@@ -36,7 +41,11 @@ fn main() {
         println!("{}", col);
     }
     let params = HashMap::from([("num_bins", 2.0 as Numeric)]);
-    let result = transform::apply(&mut cleaned, vec![("equal-width-discretization", 2)], Some(params));
+    let result = transform::apply(
+        &mut cleaned,
+        vec![("equal-width-discretization", 2)],
+        Some(params),
+    );
     if let Err(error) = result {
         println!("{}", error.to_string());
         return;

@@ -25,7 +25,9 @@ impl StratifiedKFold {
         // Populate set of class entries with indexes
         let mut label_indices = HashMap::new();
         for (idx, &value) in label_column.values().enumerate() {
-            let key = (value * 1e8).to_i64().ok_or("Could not turn Numeric into key!")?;
+            let key = (value * 1e8)
+                .to_i64()
+                .ok_or("Could not turn Numeric into key!")?;
             let index_list = label_indices.entry(key).or_insert(vec![]);
             index_list.push(idx);
         }
