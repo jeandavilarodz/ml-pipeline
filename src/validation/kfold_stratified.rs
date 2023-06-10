@@ -4,6 +4,7 @@ use crate::types::Numeric;
 use std::collections::HashMap;
 use std::error::Error;
 
+use num_traits::ToPrimitive;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
@@ -22,9 +23,10 @@ impl StratifiedKFold {
         let label_column = table.get_column_idx(label_column_idx).unwrap();
 
         // Populate set of class entries with indexes
-        let mut label_indices: HashMap<i64, Vec<usize>> = HashMap::new();
+        let mut label_indices = HashMap::new();
         for (idx, &value) in label_column.values().enumerate() {
-            let index_list = label_indices.entry(value as i64).or_insert(vec![]);
+            let key = (value * 1e8).to_i64().ok_or("Could not turn Numeric into key!")?;
+            let index_list = label_indices.entry(key).or_insert(vec![]);
             index_list.push(idx);
         }
 

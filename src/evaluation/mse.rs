@@ -1,3 +1,5 @@
+use num_traits::ToPrimitive;
+
 use super::Evaluator;
 use crate::types::Numeric;
 
@@ -10,7 +12,7 @@ impl Evaluator for MeanSquaredErrorEvaluator {
         &self,
         predictions: &[Numeric],
         target_values: &[Numeric],
-    ) -> Result<Numeric, Box<dyn Error>> {
+    ) -> Result<f64, Box<dyn Error>> {
         if predictions.len() != target_values.len() {
             return Err("Predictions and targets are not of the same size!".into());
         }
@@ -18,8 +20,8 @@ impl Evaluator for MeanSquaredErrorEvaluator {
         let mse = predictions
             .iter()
             .zip(target_values.iter())
-            .fold(0.0, |acc, (&pred, &tar)| acc + (tar - pred) * (tar - pred))
-            / target_values.len() as Numeric;
-        Ok(mse)
+            .fold(Numeric::from(0.0), |acc, (&pred, &tar)| acc + (tar - pred) * (tar - pred))
+            / target_values.len() as f64;
+        Ok(mse.to_f64().ok_or("Could not transform numeric to f64")?)
     }
 }

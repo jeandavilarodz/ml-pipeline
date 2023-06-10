@@ -15,7 +15,7 @@ use std::error::Error;
 use lazy_static::lazy_static;
 
 pub trait Parser {
-    fn parse(&self, column: &Column<Option<String>>) -> Column<Option<Numeric>>;
+    fn parse(&self, column: &Column<Option<String>>) -> Result<Column<Option<Numeric>>, Box<dyn Error>>;
 }
 
 lazy_static! {
@@ -56,7 +56,7 @@ pub fn parse_input(
     let mut parsed_cols: Vec<Column<Option<Numeric>>> = Vec::new();
     for (parser, col) in parsers.iter().zip(table.columns()) {
         let parser = &PARSE_TYPE_MAP[parser];
-        let mut new_col = parser.parse(col);
+        let mut new_col = parser.parse(col)?;
         if let Some(name) = col.get_name() {
             new_col.set_name(name.to_owned());
         }

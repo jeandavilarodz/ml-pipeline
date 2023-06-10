@@ -6,7 +6,7 @@ const DISPLAY_MAX: usize = 10;
 #[derive(Debug)]
 pub struct Column <T: Sized>{
     name: Option<String>,
-    metadata: Option<HashMap<usize, String>>,
+    metadata: Option<HashMap<u32, String>>,
     values: Vec<T>,
 }
 
@@ -45,11 +45,11 @@ impl <T>Column<T> {
         self.values.remove(idx);
     }
     
-    pub fn set_metadata(&mut self, metadata: HashMap<usize, String>) {
+    pub fn set_metadata(&mut self, metadata: HashMap<u32, String>) {
         self.metadata = Some(metadata);
     }
 
-    pub fn get_metadata(&self) -> Option<&HashMap<usize, String>> {
+    pub fn get_metadata(&self) -> Option<&HashMap<u32, String>> {
         return match &self.metadata {
             Some(metadata) => Some(&metadata),
             None => None

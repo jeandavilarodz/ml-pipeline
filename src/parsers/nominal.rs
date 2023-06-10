@@ -5,33 +5,34 @@ use crate::types::Numeric;
 use super::Parser;
 
 use std::collections::HashMap;
+use std::error::Error;
 
 pub struct NominalParser;
 
 impl Parser for NominalParser {
-    fn parse(&self, column: &Column<Option<String>>) -> Column<Option<Numeric>> {
+    fn parse(&self, column: &Column<Option<String>>) -> Result<Column<Option<Numeric>>, Box<dyn Error>> {
         let mut ret = Column::<Option<Numeric>>::new();
-        let mut map = HashMap::<String, usize>::new();
+        let mut map = HashMap::<String, u32>::new();
         let mut next_bitshift = 0;
         for value in column.values() {
             let parsed = value.as_ref().map(|value| {
                 if let Some(found) = map.get(value) {
-                    (*found) as Numeric
+                    Numeric::from(*found)
                 }
                 else {
                     let coding = 1 << next_bitshift;
                     map.insert(value.to_owned(), coding);
                     next_bitshift += 1;
-                    coding as Numeric
+                    Numeric::from(coding)
                 }
             });
             ret.push(parsed);
         }
-        let mut value_map = HashMap::<usize, String>::new();
+        let mut value_map = HashMap::<u32, String>::new();
         for (value, encoded) in map {
             value_map.insert(encoded, value);
         }
         ret.set_metadata(value_map);
-        ret
+        Ok(ret)
     }
 }

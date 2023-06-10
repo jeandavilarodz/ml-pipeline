@@ -11,7 +11,7 @@ use std::error::Error;
 use lazy_static::lazy_static;
 
 pub trait Evaluator {
-    fn evaluate(&self, predictions: &[Numeric], target_values: &[Numeric]) -> Result<Numeric, Box<dyn Error>>;
+    fn evaluate(&self, predictions: &[Numeric], target_values: &[Numeric]) -> Result<f64, Box<dyn Error>>;
 }
 
 lazy_static! {
@@ -32,7 +32,7 @@ pub fn evaluate_model(
     evaluation_name: &str,
     predictions: &[Numeric],
     target_values: &[Numeric],
-) -> Result<Numeric, Box<dyn Error>> {
+) -> Result<f64, Box<dyn Error>> {
     if !EVALUATION_REPOSITORY.contains_key(evaluation_name) {
         return Err("Evaluation strategy not supported!".into());
     }
