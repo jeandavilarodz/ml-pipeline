@@ -36,7 +36,7 @@ lazy_static! {
         ]);
 }
 
-pub fn from_training(
+pub fn build_model(
     model_name: &str,
     training_features: &[&[Numeric]],
     target_values: &[Numeric],
