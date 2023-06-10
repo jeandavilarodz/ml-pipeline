@@ -46,7 +46,7 @@ fn main() {
         println!("{}", col);
     }
 
-    let result = StratifiedCrossValidation::partition(&cleaned, 6);
+    let result = StratifiedCrossValidation::partition(&cleaned, 6, 10);
     if let Err(error) = result {
         println!("{}", error.to_string());
         return;
