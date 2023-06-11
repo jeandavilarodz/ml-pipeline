@@ -10,6 +10,8 @@ use pipeline::parsers;
 use pipeline::scrubbers;
 use pipeline::transform;
 use pipeline::validation;
+use pipeline::models;
+use pipeline::evaluation;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
@@ -55,23 +57,49 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let partitioner = validation::get_partitioner(&configs.model.validation.strategy)?;
-    let folds = partitioner(&cleaned, configs.model.validation.parameters)?;
+    let folds = partitioner(&cleaned, configs.model.label_index, configs.model.validation.parameters)?;
 
+    let evaluator = evaluation::get_evaluator(&configs.model.evaluation)?;
+
+    let model_builder = models::get_model_builder(&configs.model.name)?;
+
+    let mut model_output = Vec::new();
+    let mut validation_set = Vec::new();
+    let mut training_set = Vec::new();
     for (fold_idx, (train_indices, validation_indices)) in folds.iter().enumerate() {
         println!("FOLD #: {}", fold_idx);
+        validation_set.clear();
+        training_set.clear();
+        model_output.clear();
+
         println!("TRAINING");
         for &idx in train_indices {
-            print!("{:?}, ", cleaned.get_row(idx));
+            training_set.push(cleaned.get_row(idx));
         }
         println!();
-        println!("TRAINING SIZE: {}", train_indices.len());
+        println!("TRAINING SIZE: {}", training_set.len());
+
+        let model = model_builder.build(&training_set, configs.model.label_index)?;
+        for sample in training_set.iter() {
+            model_output.push(model.predict(sample)?);
+        }
+
+        let training_performance = evaluator(&model_output, &training_set, configs.model.label_index)?;
+        println!("Training score: {}", training_performance);
 
         println!("VALIDATION");
         for &idx in validation_indices {
-            print!("{:?}, ", cleaned.get_row(idx));
+            validation_set.push(cleaned.get_row(idx));
         }
-        println!();
-        println!("VALIDATION SIZE: {}", validation_indices.len());
+        println!("VALIDATION SIZE: {}", validation_set.len());
+
+        model_output.clear();
+        for sample in validation_set.iter() {
+            model_output.push(model.predict(sample)?);
+        }
+
+        let validation_performance = evaluator(&model_output, &validation_set, configs.model.label_index)?;
+        println!("Validation score: {}", validation_performance);
     }
 
     Ok(())

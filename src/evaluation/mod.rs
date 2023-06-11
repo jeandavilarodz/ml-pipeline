@@ -9,12 +9,13 @@ use std::error::Error;
 
 pub trait Evaluator {
     fn evaluate(
-        predictions: &[Numeric],
-        target_values: &[Numeric],
+        predictions: &Vec<Numeric>,
+        training_samples: &Vec<Vec<&Numeric>>,
+        training_label_idx: usize,
     ) -> Result<f64, Box<dyn Error>>;
 }
 
-type EvaluationFnPtr = fn(&[Numeric], &[Numeric]) -> Result<f64, Box<dyn Error>>;
+type EvaluationFnPtr = fn(&Vec<Numeric>, &Vec<Vec<&Numeric>>, usize) -> Result<f64, Box<dyn Error>>;
 
 pub fn get_evaluator(name: &str) -> Result<EvaluationFnPtr, Box<dyn Error>> {
     match name {

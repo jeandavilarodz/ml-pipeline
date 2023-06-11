@@ -10,11 +10,12 @@ use crate::types::Numeric;
 pub trait Partitioner {
     fn partition(
         table: &DataFrame<Numeric>,
+        label_column_idx: usize,
         parameters: HashMap<String, Numeric>,
     ) -> Result<Vec<(Vec<usize>, Vec<usize>)>, Box<dyn Error>>;
 }
 
-type PartitionerFnPtr = fn(&DataFrame<Numeric>, HashMap<String, Numeric>) -> Result<Vec<(Vec<usize>, Vec<usize>)>, Box<dyn Error>>;
+type PartitionerFnPtr = fn(&DataFrame<Numeric>, usize, HashMap<String, Numeric>) -> Result<Vec<(Vec<usize>, Vec<usize>)>, Box<dyn Error>>;
 
 pub fn get_partitioner(partitioner: &str) -> Result<PartitionerFnPtr, Box<dyn Error>> {
     match partitioner {

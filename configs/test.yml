@@ -20,9 +20,9 @@ transform:
 
 model:
   name: null-classifier
+  label_index: 2
   validation: 
     strategy: stratified-kfold
     parameters:
       num_folds: 2
-      index: 2
   evaluation: mse

@@ -12,6 +12,7 @@ pub struct ValidationConfigs {
 #[derive(Debug, Deserialize)]
 pub struct ModelConfigs {
     pub name: String,
+    pub label_index: usize,
     pub evaluation: String,
     pub validation: ValidationConfigs,
 }

@@ -7,14 +7,14 @@ use crate::types::Numeric;
 use std::error::Error;
 
 pub trait Model {
-    fn predict(&self, sample: &[Numeric]) -> Result<Numeric, Box<dyn Error>>;
+    fn predict(&self, sample: &Vec<&Numeric>) -> Result<Numeric, Box<dyn Error>>;
 }
 
 pub trait ModelFactory {
     fn build(
         &self,
-        training_values: &[&[Numeric]],
-        target_values: &[Numeric],
+        training_values: &Vec<Vec<&Numeric>>,
+        target_value_idx: usize,
     ) -> Result<Box<dyn Model>, Box<dyn Error>>;
     // FUTURE WORK: Maybe a add a method to generate a model from a description of hyperparameters
 }

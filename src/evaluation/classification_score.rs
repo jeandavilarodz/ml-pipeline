@@ -7,25 +7,26 @@ pub struct ClassificationScoreEvaluator;
 
 impl Evaluator for ClassificationScoreEvaluator {
     fn evaluate(
-        predictions: &[Numeric],
-        target_values: &[Numeric],
+        predictions: &Vec<Numeric>,
+        training_samples: &Vec<Vec<&Numeric>>,
+        training_label_idx: usize,
     ) -> Result<f64, Box<dyn Error>> {
-        if predictions.len() != target_values.len() {
+        if predictions.len() != training_samples.len() {
             return Err("Predictions and targets are not of the same size!".into());
         }
 
         let correct = predictions
             .iter()
-            .zip(target_values.iter())
-            .fold(0, |acc, (&pred, &tar)| {
+            .zip(training_samples.iter())
+            .fold(0, |acc, (&pred, tar)| {
                 // If class values are the same they should be close to zero
-                if (pred - tar).abs() < 1e-8 {
+                if (pred - tar[training_label_idx]).abs() < 1e-8 {
                     acc + 1
                 } else {
                     acc
                 }
             });
 
-        Ok(correct as f64 / target_values.len() as f64)
+        Ok(correct as f64 / training_samples.len() as f64)
     }
 }
