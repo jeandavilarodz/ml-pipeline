@@ -15,10 +15,6 @@ scrub:
     index: 2
 
 transform:
-  - name: equal-width-discretization
-    index: 0
-    parameters:
-      num_bins: 2
   - name: zscore
     index: 2
 

@@ -43,6 +43,8 @@ pub fn scrub(
         return Err("Scrubber type not supported!".into());
     }
 
+    println!("{:?}", parameters);
+
     let mut table = table;
 
     for parameter in parameters.into_iter() {
