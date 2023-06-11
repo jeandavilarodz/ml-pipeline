@@ -78,7 +78,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut validation_set = Vec::new();
     let mut training_set = Vec::new();
     for (fold_idx, (train_indices, validation_indices)) in folds.iter().enumerate() {
-        println!("FOLD #: {}", fold_idx);
+        println!("\nFOLD #: {}", fold_idx);
         validation_set.clear();
         training_set.clear();
         model_output.clear();
@@ -87,8 +87,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         for &idx in train_indices {
             training_set.push(cleaned.get_row(idx));
         }
-        println!();
-        println!("TRAINING SIZE: {}", training_set.len());
+        println!("SIZE: {}", training_set.len());
 
         let model = model_builder.build(&training_set, configs.model.label_index)?;
         for sample in training_set.iter() {
@@ -96,13 +95,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         let training_performance = evaluator(&model_output, &training_set, configs.model.label_index)?;
-        println!("Training score: {}", training_performance);
+        println!("SCORE: {}", training_performance);
 
         println!("VALIDATION");
         for &idx in validation_indices {
             validation_set.push(cleaned.get_row(idx));
         }
-        println!("VALIDATION SIZE: {}", validation_set.len());
+        println!("SIZE: {}", validation_set.len());
 
         model_output.clear();
         for sample in validation_set.iter() {
@@ -110,7 +109,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         let validation_performance = evaluator(&model_output, &validation_set, configs.model.label_index)?;
-        println!("Validation score: {}", validation_performance);
+        println!("SCORE: {}", validation_performance);
     }
 
     Ok(())
