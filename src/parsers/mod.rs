@@ -24,7 +24,7 @@ pub trait Parser {
 lazy_static! {
     static ref PARSE_TYPE_MAP: HashMap<&'static str, Box<dyn Parser + Sync>> = HashMap::from([
         (
-            "numerical",
+            "numeric",
             Box::new(numerical::NumericalParser) as Box<dyn Parser + Sync>
         ),
         (

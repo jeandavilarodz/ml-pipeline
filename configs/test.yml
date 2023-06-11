@@ -8,7 +8,7 @@ input:
 parsing:
   - ordinal
   - ordinal
-  - ordinal
+  - numeric
 
 scrub:
   - name: mean
@@ -20,7 +20,7 @@ transform:
     parameters:
       num_bins: 2
   - name: zscore
-    index: 1
+    index: 2
 
 model:
   name: null-classifier
