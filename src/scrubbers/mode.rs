@@ -5,11 +5,12 @@ use crate::data::column::Column;
 use crate::types::Numeric;
 
 use std::collections::HashMap;
+use std::error::Error;
 
 pub struct ModeScrubber;
 
 impl Scrubber for ModeScrubber {
-    fn clean(&self, column: &mut Column<Option<Numeric>>) {
+    fn clean(column: &mut Column<Option<Numeric>>) -> Result<(), Box<dyn Error>> {
         let mut label_count = HashMap::new();
 
         for value in column.values().filter_map(|&value| value) {
@@ -24,11 +25,13 @@ impl Scrubber for ModeScrubber {
                                 .map(|(val, _)| val);
         
         if mode.is_none() {
-            return;
+            return Err("Mode of column not found!".into());
         }
 
         let mode = (*mode.unwrap() as f64) * 1e-8;
 
         column.values_mut().for_each(|v| *v = v.or(Some(mode)));
+
+        Ok(())
     }
 }

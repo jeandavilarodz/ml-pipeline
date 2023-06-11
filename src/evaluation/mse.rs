@@ -9,7 +9,6 @@ pub struct MeanSquaredErrorEvaluator;
 
 impl Evaluator for MeanSquaredErrorEvaluator {
     fn evaluate(
-        &self,
         predictions: &[Numeric],
         target_values: &[Numeric],
     ) -> Result<f64, Box<dyn Error>> {

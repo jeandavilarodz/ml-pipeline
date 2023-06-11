@@ -10,7 +10,6 @@ pub struct ZScoreNormalization;
 
 impl Transform for ZScoreNormalization {
     fn apply(
-        &self,
         column: &mut Column<Numeric>,
         _parameters: &Option<HashMap<String, Numeric>>,
     ) -> Result<(), Box<dyn Error>> {

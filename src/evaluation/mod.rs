@@ -5,41 +5,22 @@ mod mse;
 
 use crate::types::Numeric;
 
-use std::collections::HashMap;
 use std::error::Error;
-
-use lazy_static::lazy_static;
 
 pub trait Evaluator {
     fn evaluate(
-        &self,
         predictions: &[Numeric],
         target_values: &[Numeric],
     ) -> Result<f64, Box<dyn Error>>;
 }
 
-lazy_static! {
-    static ref EVALUATION_REPOSITORY: HashMap<&'static str, Box<dyn Evaluator + Sync>> =
-        HashMap::from([
-            (
-                "mse",
-                Box::new(mse::MeanSquaredErrorEvaluator) as Box<dyn Evaluator + Sync>
-            ),
-            (
-                "classification-score",
-                Box::new(classification_score::ClassificationScoreEvaluator)
-                    as Box<dyn Evaluator + Sync>
-            )
-        ]);
-}
+type EvaluationFnPtr = fn(&[Numeric], &[Numeric]) -> Result<f64, Box<dyn Error>>;
 
-pub fn evaluate_model(
-    evaluation_name: &str,
-    predictions: &[Numeric],
-    target_values: &[Numeric],
-) -> Result<f64, Box<dyn Error>> {
-    if !EVALUATION_REPOSITORY.contains_key(evaluation_name) {
-        return Err("Evaluation strategy not supported!".into());
+pub fn get_evaluator(name: &str) -> Result<EvaluationFnPtr, Box<dyn Error>> {
+    match name {
+        "classification-score" => Ok(classification_score::ClassificationScoreEvaluator::evaluate),
+        "mse" => Ok(mse::MeanSquaredErrorEvaluator::evaluate),
+        _ => Err("Evaluation strategy not supported: {name}".into())
     }
-    EVALUATION_REPOSITORY[evaluation_name].evaluate(predictions, target_values)
+
 }

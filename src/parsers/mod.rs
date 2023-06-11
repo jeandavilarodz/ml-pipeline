@@ -9,34 +9,24 @@ use crate::data::column::Column;
 use crate::data::data_frame::DataFrame;
 use crate::types::Numeric;
 
-use std::collections::HashMap;
 use std::error::Error;
-
-use lazy_static::lazy_static;
 
 pub trait Parser {
     fn parse(
-        &self,
         column: &Column<Option<String>>,
     ) -> Result<Column<Option<Numeric>>, Box<dyn Error>>;
 }
 
-lazy_static! {
-    static ref PARSE_TYPE_MAP: HashMap<&'static str, Box<dyn Parser + Sync>> = HashMap::from([
-        (
-            "numeric",
-            Box::new(numerical::NumericalParser) as Box<dyn Parser + Sync>
-        ),
-        (
-            "nominal",
-            Box::new(nominal::NominalParser) as Box<dyn Parser + Sync>
-        ),
-        (
-            "ordinal",
-            Box::new(ordinal::OrdinalParser) as Box<dyn Parser + Sync>
-        ),
-        ("null", Box::new(null::NullParser) as Box<dyn Parser + Sync>),
-    ]);
+type ParseFnPtr = fn(&Column<Option<String>>) -> Result<Column<Option<Numeric>>, Box<dyn Error>>;
+
+pub fn get_parser(name: &str) -> Result<ParseFnPtr, Box<dyn Error>> {
+    match name {
+        "numeric" => Ok(numerical::NumericalParser::parse),
+        "nominal" => Ok(nominal::NominalParser::parse),
+        "ordinal" => Ok(ordinal::OrdinalParser::parse),
+        "null" => Ok(null::NullParser::parse),
+        _ => Err("Invalid parser name given!".into()),
+    }
 }
 
 pub fn parse_input(
@@ -48,20 +38,10 @@ pub fn parse_input(
         return Err("Did not provide enough parsers per table column!".into());
     }
 
-    println!("{:?}", &parsers);
-
-    let missing_parser = parsers
-        .iter()
-        .fold(false, |acc, p| acc | !PARSE_TYPE_MAP.contains_key(p.as_str()));
-
-    if missing_parser {
-        return Err("Parser type not supported!".into());
-    }
-
     let mut parsed_cols: Vec<Column<Option<Numeric>>> = Vec::new();
     for (parser, col) in parsers.iter().zip(table.columns()) {
-        let parser = &PARSE_TYPE_MAP[parser.as_str()];
-        let mut new_col = parser.parse(col)?;
+        let parser = get_parser(parser.as_str())?;
+        let mut new_col = parser(col)?;
         if let Some(name) = col.get_name() {
             new_col.set_name(name.to_owned());
         }

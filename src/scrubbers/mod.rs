@@ -8,49 +8,32 @@ use crate::data::data_frame::DataFrame;
 use crate::data::column::Column;
 use crate::types::Numeric;
 
-use std::collections::HashMap;
 use std::error::Error;
 
-use lazy_static::lazy_static;
-
 trait Scrubber {
-    fn clean(&self, column: &mut Column<Option<Numeric>>);
+    fn clean(column: &mut Column<Option<Numeric>>) -> Result<(), Box<dyn Error>>;
 }
 
-lazy_static! {
-    static ref SCRUBBER_TYPE_MAP: HashMap<&'static str, Box<dyn Scrubber + Sync>> =
-        HashMap::from([
-            (
-                "mean",
-                Box::new(mean::MeanScrubber) as Box<dyn Scrubber + Sync>
-            ),
-            (
-                "mode",
-                Box::new(mode::ModeScrubber) as Box<dyn Scrubber + Sync>
-            )
-        ]);
+type ScrubFnPtr = fn(&mut Column<Option<Numeric>>) -> Result<(), Box<dyn Error>>;
+
+pub fn get_scrubber(name: &str) -> Result<ScrubFnPtr, Box<dyn Error>> {
+    match name {
+        "mean" => Ok(mean::MeanScrubber::clean),
+        "mode" => Ok(mode::ModeScrubber::clean),
+        _ => Err("Invalid scrubber name given!".into()),
+    }
 }
 
 pub fn scrub(
     table: DataFrame<Option<Numeric>>,
     parameters: Vec<ScrubbingStageConfigs>,
 ) -> Result<DataFrame<Numeric>, Box<dyn Error>> {
-    let missing_parser = parameters.iter().fold(false, |acc, p| {
-        acc | !SCRUBBER_TYPE_MAP.contains_key(p.name.as_str())
-    });
-
-    if missing_parser {
-        return Err("Scrubber type not supported!".into());
-    }
-
-    println!("{:?}", parameters);
-
     let mut table = table;
 
     for parameter in parameters.into_iter() {
-        let scrubber = &SCRUBBER_TYPE_MAP[parameter.name.as_str()];
+        let scrubber = get_scrubber(&parameter.name)?;
         if let Some(column) = table.get_column_idx_mut(parameter.index) {
-            scrubber.clean(column);
+            scrubber(column)?;
         }
     }
 

@@ -8,7 +8,6 @@ pub struct NullParser;
 
 impl Parser for NullParser {
     fn parse(
-        &self,
         column: &Column<Option<String>>,
     ) -> Result<Column<Option<Numeric>>, Box<dyn Error>> {
         let mut ret = Column::<Option<Numeric>>::new();

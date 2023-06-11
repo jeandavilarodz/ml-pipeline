@@ -7,7 +7,6 @@ pub struct ClassificationScoreEvaluator;
 
 impl Evaluator for ClassificationScoreEvaluator {
     fn evaluate(
-        &self,
         predictions: &[Numeric],
         target_values: &[Numeric],
     ) -> Result<f64, Box<dyn Error>> {

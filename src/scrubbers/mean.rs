@@ -4,10 +4,12 @@ use super::Scrubber;
 use crate::data::column::Column;
 use crate::types::Numeric;
 
+use std::error::Error;
+
 pub struct MeanScrubber;
 
 impl Scrubber for MeanScrubber {
-    fn clean(&self, column: &mut Column<Option<Numeric>>) {
+    fn clean(column: &mut Column<Option<Numeric>>) -> Result<(), Box<dyn Error>> {
         // Sum over all elements that are not None
         let sum = column
             .values()
@@ -18,11 +20,13 @@ impl Scrubber for MeanScrubber {
         let count = column.values().filter_map(|&value| value).count();
 
         if count == 0 {
-            return;
+            return Err("Null column passed to MeanScrubber!".into());
         }
 
         let mean = sum / (count as f64);
 
         column.values_mut().for_each(|v| *v = v.or(Some(mean)));
+        
+        Ok(())
     }
 }

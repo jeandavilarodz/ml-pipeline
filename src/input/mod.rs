@@ -1,38 +1,23 @@
 //! This contains logic to read input
 
-pub mod csv;
+mod csv;
 
-use lazy_static::lazy_static;
-
-use crate::config::InputStageConfigs;
 use crate::data::data_frame::DataFrame;
-use std::collections::HashMap;
 use std::error::Error;
 
 pub trait Reader {
     fn read(
-        &self,
         address: &str,
         missing_values: &Vec<String>,
         headers: bool,
     ) -> Result<DataFrame<Option<String>>, Box<dyn Error>>;
 }
 
-lazy_static! {
-    static ref INPUT_FORMAT_MAP: HashMap<&'static str, Box<dyn Reader + Sync>> =
-        HashMap::from([("csv", Box::new(csv::CsvReader) as Box<dyn Reader + Sync>),]);
-}
+type InputFnPtr = fn(&str, &Vec<String>, bool) -> Result<DataFrame<Option<String>>, Box<dyn Error>>;
 
-pub fn read_input(
-    parameters: InputStageConfigs,
-) -> Result<DataFrame<Option<String>>, Box<dyn Error>> {
-    let format = parameters.format.as_str();
-    if !INPUT_FORMAT_MAP.contains_key(format) {
-        return Err("Invalid input format!".into());
+pub fn get_reader(format: &str) -> Result<InputFnPtr, Box<dyn Error>> {
+    match format {
+        "csv" => Ok(csv::CsvReader::read),
+        _ => Err("Invalid format passed!".into()),
     }
-    INPUT_FORMAT_MAP[format].read(
-        &parameters.address,
-        &parameters.missing_values,
-        parameters.headers,
-    )
 }

@@ -11,7 +11,6 @@ pub struct EqualWidthDiscretization;
 
 impl Transform for EqualWidthDiscretization {
     fn apply(
-        &self,
         column: &mut Column<Numeric>,
         parameters: &Option<HashMap<String, Numeric>>,
     ) -> Result<(), Box<dyn Error>> {
@@ -51,7 +50,6 @@ pub struct EqualFrequencyDiscretization;
 
 impl Transform for EqualFrequencyDiscretization {
     fn apply(
-        &self,
         column: &mut Column<Numeric>,
         parameters: &Option<HashMap<String, Numeric>>,
     ) -> Result<(), Box<dyn Error>> {

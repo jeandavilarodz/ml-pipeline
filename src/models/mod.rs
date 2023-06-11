@@ -4,10 +4,7 @@ mod null;
 
 use crate::types::Numeric;
 
-use std::collections::HashMap;
 use std::error::Error;
-
-use lazy_static::lazy_static;
 
 pub trait Model {
     fn predict(&self, sample: &[Numeric]) -> Result<Numeric, Box<dyn Error>>;
@@ -22,27 +19,10 @@ pub trait ModelFactory {
     // FUTURE WORK: Maybe a add a method to generate a model from a description of hyperparameters
 }
 
-lazy_static! {
-    static ref MODEL_REPOSITORY: HashMap<&'static str, Box<dyn ModelFactory + Sync>> =
-        HashMap::from([
-            (
-                "null-classifier",
-                Box::new(null::NullModelFactory) as Box<dyn ModelFactory + Sync>
-            ),
-            (
-                "null-regression",
-                Box::new(null::NullRegressionModelFactory) as Box<dyn ModelFactory + Sync>
-            )
-        ]);
-}
-
-pub fn build_model(
-    model_name: &str,
-    training_features: &[&[Numeric]],
-    target_values: &[Numeric],
-) -> Result<Box<dyn Model>, Box<dyn Error>> {
-    if !MODEL_REPOSITORY.contains_key(model_name) {
-        return Err("Model not supported!".into());
+pub fn get_model_builder(model_name: &str) -> Result<Box<dyn ModelFactory>, Box<dyn Error>> {
+    match model_name {
+        "null-regression" => Ok(Box::new(null::NullRegressionModelFactory)),
+        "null-classifier" => Ok(Box::new(null::NullModelFactory)),
+        _ => Err("Unsupported model: {model_name}".into()),
     }
-    MODEL_REPOSITORY[model_name].build(training_features, target_values)
 }

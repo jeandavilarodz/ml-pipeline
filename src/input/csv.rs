@@ -8,7 +8,6 @@ pub struct CsvReader;
 
 impl Reader for CsvReader {
     fn read(
-        &self,
         address: &str,
         missing_values: &Vec<String>,
         headers: bool,

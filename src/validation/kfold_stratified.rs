@@ -1,5 +1,6 @@
 use crate::data::data_frame::DataFrame;
 use crate::types::Numeric;
+use super::Partitioner;
 
 use std::collections::HashMap;
 use std::error::Error;
@@ -10,15 +11,26 @@ use rand::thread_rng;
 
 pub struct StratifiedKFold;
 
-impl StratifiedKFold {
-    pub fn partition(
+impl Partitioner for StratifiedKFold {
+    fn partition(
         table: &DataFrame<Numeric>,
-        label_column_idx: usize,
-        k: usize,
+        parameters: HashMap<String, Numeric>,
     ) -> Result<Vec<(Vec<usize>, Vec<usize>)>, Box<dyn Error>> {
+        let label_column_idx = parameters
+            .get("index")
+            .ok_or("index parameter not present!")?
+            .to_usize()
+            .ok_or("Could not parse index as usize!")?;
+
         if table.get_column_idx(label_column_idx).is_none() {
             return Err("Couldn't find index of column of target value!".into());
         }
+
+        let k = parameters
+            .get("num_folds")
+            .ok_or("num_folds parameter not present!")?
+            .to_usize()
+            .ok_or("Could not parse num_folds as usize!")?;
 
         let label_column = table.get_column_idx(label_column_idx).unwrap();
 
