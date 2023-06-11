@@ -1,0 +1,24 @@
+input:
+  address: datasets/car.data
+  format: csv
+  missing_values:
+    - none
+  headers: false
+
+parsing:
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+
+model:
+  name: null-classifier
+  label_index: 6
+  validation: 
+    strategy: stratified-kfold
+    parameters:
+      num_folds: 10
+  evaluation: mse

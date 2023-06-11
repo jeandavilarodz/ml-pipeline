@@ -42,7 +42,7 @@ pub struct TransformStageConfigs {
 pub struct ConfigStruct {
     pub input: InputStageConfigs,
     pub parsing: Vec<String>,
-    pub scrub: Vec<ScrubbingStageConfigs>,
-    pub transform: Vec<TransformStageConfigs>,
+    pub scrub: Option<Vec<ScrubbingStageConfigs>>,
+    pub transform: Option<Vec<TransformStageConfigs>>,
     pub model: ModelConfigs,
 }

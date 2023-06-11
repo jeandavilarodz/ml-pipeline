@@ -3,7 +3,6 @@
 mod mean;
 mod mode;
 
-use crate::config::ScrubbingStageConfigs;
 use crate::data::data_frame::DataFrame;
 use crate::data::column::Column;
 use crate::types::Numeric;
@@ -24,18 +23,8 @@ pub fn get_scrubber(name: &str) -> Result<ScrubFnPtr, Box<dyn Error>> {
     }
 }
 
-pub fn scrub(
-    table: DataFrame<Option<Numeric>>,
-    parameters: Vec<ScrubbingStageConfigs>,
-) -> Result<DataFrame<Numeric>, Box<dyn Error>> {
+pub fn amputate(table: DataFrame<Option<Numeric>>) -> Result<DataFrame<Numeric>, Box<dyn Error>> {
     let mut table = table;
-
-    for parameter in parameters.into_iter() {
-        let scrubber = get_scrubber(&parameter.name)?;
-        if let Some(column) = table.get_column_idx_mut(parameter.index) {
-            scrubber(column)?;
-        }
-    }
 
     // Calculate the amputation indexes and sort them in order to use iteration to remove the values
     let mut amputation_index = Vec::new();

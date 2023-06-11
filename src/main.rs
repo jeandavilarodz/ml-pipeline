@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // Parsing stage, this should convert the present strings to numbers
-    let parsed = parsers::parse_input(input, configs.parsing)?;
+    let mut parsed = parsers::parse_input(input, configs.parsing)?;
 
     for col in parsed.columns() {
         println!("{}", col);
@@ -43,17 +43,28 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Scrubbing stage, this stage replaces missing values and all missing
     // values are dealt with
-    let mut cleaned = scrubbers::scrub(parsed, configs.scrub)?;
+    if let Some(configs) = configs.scrub {
+        for config in configs {
+            let scrubber = scrubbers::get_scrubber(&config.name)?;
+            if let Some(column) = parsed.get_column_idx_mut(config.index) {
+                scrubber(column)?;
+            }
+        }
+    }
 
+    // Amputate null values to turn Option<Numeric> to Numeric
+    let mut cleaned = scrubbers::amputate(parsed)?;
     for col in cleaned.columns() {
         println!("{}", col);
     }
 
     // Transform stage, this stage performs operations to the numbers
-    transform::apply(&mut cleaned, configs.transform)?;
+    if let Some(configs) = configs.transform {
+        transform::apply(&mut cleaned, configs)?;
 
-    for col in cleaned.columns() {
-        println!("{}", col);
+        for col in cleaned.columns() {
+            println!("{}", col);
+        }
     }
 
     let partitioner = validation::get_partitioner(&configs.model.validation.strategy)?;
