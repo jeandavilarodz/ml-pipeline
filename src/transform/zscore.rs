@@ -6,13 +6,13 @@ use crate::types::Numeric;
 
 use std::error::Error;
 
-pub struct NormalizeTransform;
+pub struct ZScoreNormalization;
 
-impl Transform for NormalizeTransform {
+impl Transform for ZScoreNormalization {
     fn apply(
         &self,
         column: &mut Column<Numeric>,
-        _parameters: &Option<HashMap<&str, Numeric>>,
+        _parameters: &Option<HashMap<String, Numeric>>,
     ) -> Result<(), Box<dyn Error>> {
         let sum = column.values().fold(0.0, |acc, &v| acc + v);
         let count = column.values().count();

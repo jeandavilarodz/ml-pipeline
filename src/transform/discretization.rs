@@ -13,7 +13,7 @@ impl Transform for EqualWidthDiscretization {
     fn apply(
         &self,
         column: &mut Column<Numeric>,
-        parameters: &Option<HashMap<&str, Numeric>>,
+        parameters: &Option<HashMap<String, Numeric>>,
     ) -> Result<(), Box<dyn Error>> {
         let parameters = parameters.as_ref().ok_or("No parameters given!")?;
         let num_bins = parameters
@@ -53,7 +53,7 @@ impl Transform for EqualFrequencyDiscretization {
     fn apply(
         &self,
         column: &mut Column<Numeric>,
-        parameters: &Option<HashMap<&str, Numeric>>,
+        parameters: &Option<HashMap<String, Numeric>>,
     ) -> Result<(), Box<dyn Error>> {
         let parameters = parameters.as_ref().ok_or("No parameters given!")?;
         let num_bins = parameters

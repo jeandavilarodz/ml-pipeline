@@ -22,7 +22,7 @@ lazy_static! {
     static ref EVALUATION_REPOSITORY: HashMap<&'static str, Box<dyn Evaluator + Sync>> =
         HashMap::from([
             (
-                "MSE",
+                "mse",
                 Box::new(mse::MeanSquaredErrorEvaluator) as Box<dyn Evaluator + Sync>
             ),
             (

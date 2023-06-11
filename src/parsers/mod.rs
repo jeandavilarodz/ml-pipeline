@@ -41,16 +41,18 @@ lazy_static! {
 
 pub fn parse_input(
     table: DataFrame<Option<String>>,
-    parsers: Vec<&str>,
+    parsers: Vec<String>,
 ) -> Result<DataFrame<Option<Numeric>>, Box<dyn Error>> {
     let mut ret = DataFrame::<Option<Numeric>>::new();
     if table.columns().len() != parsers.len() {
         return Err("Did not provide enough parsers per table column!".into());
     }
 
+    println!("{:?}", &parsers);
+
     let missing_parser = parsers
         .iter()
-        .fold(false, |acc, p| acc | !PARSE_TYPE_MAP.contains_key(p));
+        .fold(false, |acc, p| acc | !PARSE_TYPE_MAP.contains_key(p.as_str()));
 
     if missing_parser {
         return Err("Parser type not supported!".into());
@@ -58,7 +60,7 @@ pub fn parse_input(
 
     let mut parsed_cols: Vec<Column<Option<Numeric>>> = Vec::new();
     for (parser, col) in parsers.iter().zip(table.columns()) {
-        let parser = &PARSE_TYPE_MAP[parser];
+        let parser = &PARSE_TYPE_MAP[parser.as_str()];
         let mut new_col = parser.parse(col)?;
         if let Some(name) = col.get_name() {
             new_col.set_name(name.to_owned());

@@ -7,3 +7,4 @@ pub mod scrubbers;
 pub mod transform;
 pub mod types;
 pub mod validation;
+pub mod config;
