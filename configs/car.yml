@@ -21,4 +21,4 @@ model:
     strategy: stratified-kfold
     parameters:
       num_folds: 10
-  evaluation: mse
+  evaluation: classification-score
