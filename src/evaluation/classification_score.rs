@@ -10,7 +10,7 @@ impl Evaluator for ClassificationScoreEvaluator {
         &self,
         predictions: &[Numeric],
         target_values: &[Numeric],
-    ) -> Result<Numeric, Box<dyn Error>> {
+    ) -> Result<f64, Box<dyn Error>> {
         if predictions.len() != target_values.len() {
             return Err("Predictions and targets are not of the same size!".into());
         }
@@ -27,6 +27,6 @@ impl Evaluator for ClassificationScoreEvaluator {
                 }
             });
 
-        Ok(correct as Numeric / target_values.len() as Numeric)
+        Ok(correct as f64 / target_values.len() as f64)
     }
 }

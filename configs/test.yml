@@ -1,0 +1,27 @@
+input:
+  address: datasets/test.csv
+  format: csv
+  missing_values:
+    - none
+  headers: true
+
+parsing:
+  - ordinal
+  - ordinal
+  - numeric
+
+scrub:
+  - name: mean
+    index: 2
+
+transform:
+  - name: zscore
+    index: 2
+
+model:
+  name: null-classifier
+  validation: 
+    strategy: kfold-stratified
+    parameters:
+      num_folds: 10
+  evaluation: mse

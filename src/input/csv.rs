@@ -10,7 +10,7 @@ impl Reader for CsvReader {
     fn read(
         &self,
         address: &str,
-        missing_values: &Vec<&str>,
+        missing_values: &Vec<String>,
         headers: bool,
     ) -> Result<DataFrame<Option<String>>, Box<dyn Error>> {
         let mut reader = csv::Reader::from_path(address)?;
@@ -27,10 +27,11 @@ impl Reader for CsvReader {
         }
         for rec in reader.records() {
             for (entry, col) in rec?.iter().zip(columns.iter_mut()) {
+                let entry = entry.trim().to_owned();
                 if missing_values.contains(&entry) {
                     col.push(None);
                 } else {
-                    col.push(Some(entry.trim().to_owned()));
+                    col.push(Some(entry));
                 }
             }
         }

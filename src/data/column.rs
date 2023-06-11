@@ -4,13 +4,19 @@ use std::fmt;
 const DISPLAY_MAX: usize = 10;
 
 #[derive(Debug)]
-pub struct Column <T: Sized>{
+pub struct Column<T: Sized> {
     name: Option<String>,
-    metadata: Option<HashMap<usize, String>>,
+    metadata: Option<HashMap<u32, String>>,
     values: Vec<T>,
 }
 
-impl <T>Column<T> {
+impl<T> Default for Column<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T> Column<T> {
     pub fn new() -> Self {
         Self {
             name: None,
@@ -18,22 +24,22 @@ impl <T>Column<T> {
             values: Vec::new(),
         }
     }
-    
+
     pub fn set_name(&mut self, name: String) {
         self.name = Some(name);
     }
-    
+
     pub fn get_name(&self) -> Option<&str> {
-        return match &self.name {
-            Some(name) => Some(&name),
-            None => None
+        match &self.name {
+            Some(name) => Some(name),
+            None => None,
         }
     }
 
     pub fn append(&mut self, values: Vec<T>) {
         self.values.extend(values);
     }
-    
+
     pub fn push(&mut self, value: T) {
         self.values.push(value);
     }
@@ -44,15 +50,15 @@ impl <T>Column<T> {
         }
         self.values.remove(idx);
     }
-    
-    pub fn set_metadata(&mut self, metadata: HashMap<usize, String>) {
+
+    pub fn set_metadata(&mut self, metadata: HashMap<u32, String>) {
         self.metadata = Some(metadata);
     }
 
-    pub fn get_metadata(&self) -> Option<&HashMap<usize, String>> {
-        return match &self.metadata {
-            Some(metadata) => Some(&metadata),
-            None => None
+    pub fn get_metadata(&self) -> Option<&HashMap<u32, String>> {
+        match &self.metadata {
+            Some(metadata) => Some(metadata),
+            None => None,
         }
     }
 
@@ -78,24 +84,25 @@ impl <T>Column<T> {
 }
 
 impl<T> fmt::Display for Column<T>
-where T: fmt::Debug
+where
+    T: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &self.name {
-            Some(name) => write!(f, "{:-^16}\n", name)?,
-            _ => write!(f, "{:-^16}\n", "N/A")?,
+            Some(name) => writeln!(f, "{:-^16}", name)?,
+            _ => writeln!(f, "{:-^16}", "N/A")?,
         }
         if self.values.len() <= DISPLAY_MAX {
             for val in self.values.iter() {
-                write!(f, "{:?}\n", val)?;
+                writeln!(f, "{:?}", val)?;
             }
-            return Ok(())
+            return Ok(());
         }
         for val in self.values[0..(DISPLAY_MAX - 1)].iter() {
-            write!(f, "{:?}\n", val)?;
+            writeln!(f, "{:?}", val)?;
         }
-        write!(f, "{}\n", "...")?;
-        write!(f, "{:?}\n", self.values.last().unwrap())?;
-        return Ok(())
+        writeln!(f, "...")?;
+        writeln!(f, "{:?}", self.values.last().unwrap())?;
+        Ok(())
     }
 }

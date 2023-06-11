@@ -1,7 +1,9 @@
 //! This module contains logic to pre-process the input data for later use
 
 mod mean;
+mod mode;
 
+use crate::config::ScrubbingStageConfigs;
 use crate::data::data_frame::DataFrame;
 use crate::data::column::Column;
 use crate::types::Numeric;
@@ -15,26 +17,39 @@ trait Scrubber {
     fn clean(&self, column: &mut Column<Option<Numeric>>);
 }
 
-lazy_static!{
-    static ref SCRUBBER_TYPE_MAP: HashMap<&'static str, Box<dyn Scrubber + Sync>> = HashMap::from([
-        ("mean", Box::new(mean::MeanScrubber) as Box<dyn Scrubber + Sync>),
-    ]);
+lazy_static! {
+    static ref SCRUBBER_TYPE_MAP: HashMap<&'static str, Box<dyn Scrubber + Sync>> =
+        HashMap::from([
+            (
+                "mean",
+                Box::new(mean::MeanScrubber) as Box<dyn Scrubber + Sync>
+            ),
+            (
+                "mode",
+                Box::new(mode::ModeScrubber) as Box<dyn Scrubber + Sync>
+            )
+        ]);
 }
 
-pub fn scrub(table: DataFrame<Option<Numeric>>, scrubbers: Vec<(&str, usize)>) -> Result<DataFrame<Numeric>, Box<dyn Error>> {
-    let missing_parser = scrubbers
-        .iter()
-        .fold(false, |acc, p| acc | !SCRUBBER_TYPE_MAP.contains_key(p.0));
+pub fn scrub(
+    table: DataFrame<Option<Numeric>>,
+    parameters: Vec<ScrubbingStageConfigs>,
+) -> Result<DataFrame<Numeric>, Box<dyn Error>> {
+    let missing_parser = parameters.iter().fold(false, |acc, p| {
+        acc | !SCRUBBER_TYPE_MAP.contains_key(p.name.as_str())
+    });
 
     if missing_parser {
         return Err("Scrubber type not supported!".into());
     }
 
+    println!("{:?}", parameters);
+
     let mut table = table;
 
-    for (scrubber, idx) in scrubbers.into_iter() {
-        let scrubber = &SCRUBBER_TYPE_MAP[scrubber];
-        if let Some(column) = table.get_column_idx_mut(idx) {
+    for parameter in parameters.into_iter() {
+        let scrubber = &SCRUBBER_TYPE_MAP[parameter.name.as_str()];
+        if let Some(column) = table.get_column_idx_mut(parameter.index) {
             scrubber.clean(column);
         }
     }
@@ -66,6 +81,6 @@ pub fn scrub(table: DataFrame<Option<Numeric>>, scrubbers: Vec<(&str, usize)>) -
         clean_col.append(column.values().filter_map(|x| *x).collect());
         ret.add_column(clean_col);
     }
-    
+
     Ok(ret)
 }

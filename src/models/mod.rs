@@ -14,7 +14,7 @@ pub trait Model {
 }
 
 pub trait ModelFactory {
-    fn from_training(
+    fn build(
         &self,
         training_values: &[&[Numeric]],
         target_values: &[Numeric],
@@ -24,17 +24,19 @@ pub trait ModelFactory {
 
 lazy_static! {
     static ref MODEL_REPOSITORY: HashMap<&'static str, Box<dyn ModelFactory + Sync>> =
-        HashMap::from([(
-            "null-classifier",
-            Box::new(null::NullModelFactory) as Box<dyn ModelFactory + Sync>
-        ),
-        (
-            "null-regression",
-            Box::new(null::NullRegressionModelFactory) as Box<dyn ModelFactory + Sync>
-        )]);
+        HashMap::from([
+            (
+                "null-classifier",
+                Box::new(null::NullModelFactory) as Box<dyn ModelFactory + Sync>
+            ),
+            (
+                "null-regression",
+                Box::new(null::NullRegressionModelFactory) as Box<dyn ModelFactory + Sync>
+            )
+        ]);
 }
 
-pub fn from_training(
+pub fn build_model(
     model_name: &str,
     training_features: &[&[Numeric]],
     target_values: &[Numeric],
@@ -42,5 +44,5 @@ pub fn from_training(
     if !MODEL_REPOSITORY.contains_key(model_name) {
         return Err("Model not supported!".into());
     }
-    Ok(MODEL_REPOSITORY[model_name].from_training(training_features, target_values)?)
+    MODEL_REPOSITORY[model_name].build(training_features, target_values)
 }
