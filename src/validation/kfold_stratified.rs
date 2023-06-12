@@ -24,6 +24,7 @@ impl Partitioner for StratifiedKFold {
         label_column_idx: usize,
         parameters: HashMap<String, Numeric>,
     ) -> Result<Vec<(Vec<usize>, Vec<usize>)>, Box<dyn Error>> {
+        // Verify input is valid
         if table.get_column_idx(label_column_idx).is_none() {
             return Err("Couldn't find index of column of target value!".into());
         }
@@ -34,9 +35,10 @@ impl Partitioner for StratifiedKFold {
             .to_usize()
             .ok_or("Could not parse num_folds as usize!")?;
 
+        // Get a reference to the column that contains the class labels
         let label_column = table.get_column_idx(label_column_idx).unwrap();
 
-        // Populate set of class entries with indexes
+        // Populate a map of label values with a list of all the values that are within
         let mut label_indices = HashMap::new();
         for (idx, &value) in label_column.values().enumerate() {
             let key = (value * 1e8)
@@ -46,11 +48,12 @@ impl Partitioner for StratifiedKFold {
             index_list.push(idx);
         }
 
-        // Shuffle indexes in each vector
+        // Shuffle the list of indexes for each class label
         label_indices
             .values_mut()
             .for_each(|indices| indices.shuffle(&mut thread_rng()));
 
+        // Printing for debugging purposes
         for (label, index_list) in label_indices.iter() {
             println!(
                 "label: {} | n: {} | p: {}",
@@ -62,15 +65,22 @@ impl Partitioner for StratifiedKFold {
 
         let mut ret = Vec::with_capacity(k);
 
+        // Create index list for K-1 folds, these should be equal sized
         for idx in 0..k - 1 {
             println!("FOLD: {}", idx + 1);
             let mut validation_indices = Vec::new();
             let mut training_indices = Vec::new();
             let mut label_sizes = Vec::new();
+
+            // iterate through each class label in the map of class labels
             for indexes in label_indices.values() {
+                // Calculate the number of items of that class we should pick 
+                // as well as the starting and ending indexes
                 let fold_size = indexes.len() / k;
                 let start = idx * fold_size;
                 let end = (idx + 1) * fold_size;
+
+                // Copy the indexes to a list of all indexes pertaining to training and validation
                 validation_indices.extend(indexes[start..end].to_vec());
                 training_indices.extend([&indexes[0..start], &indexes[end..]].concat());
                 label_sizes.push(indexes[0..start].len() + indexes[end..].len());
@@ -83,14 +93,18 @@ impl Partitioner for StratifiedKFold {
                     100.0 * label_size as f32 / training_indices.len() as f32
                 );
             }
+
+            // Push the pair of training and validation sets to the output
             ret.push((training_indices, validation_indices));
         }
 
+        // Calculate values in the last fold
         let mut validation_indices = Vec::new();
         let mut training_indices = Vec::new();
         let mut label_sizes = Vec::new();
         println!("FOLD: {}", k);
         for indexes in label_indices.values() {
+            // Calculate the fold size and extending by the residual value
             let fold_size = (indexes.len() / k) + (indexes.len() % k);
             let end = indexes.len();
             let start = end - fold_size;
@@ -106,6 +120,8 @@ impl Partitioner for StratifiedKFold {
                 100.0 * label_size as f32 / training_indices.len() as f32
             );
         }
+
+        // Push the last fold to the output
         ret.push((training_indices, validation_indices));
 
         Ok(ret)

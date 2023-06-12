@@ -18,6 +18,7 @@ impl Transform for ZScoreNormalization {
         column: &mut Column<Numeric>,
         _parameters: &Option<HashMap<String, Numeric>>,
     ) -> Result<(), Box<dyn Error>> {
+        // Sum all values in the column
         let sum = column.values().fold(0.0, |acc, &v| acc + v);
         let count = column.values().count();
 
@@ -25,8 +26,11 @@ impl Transform for ZScoreNormalization {
             return Err("Number of items in the column is zero!".into());
         }
 
+        // Calculate the mean of the values in the column
         let mean = sum / (count as f64);
 
+        // Calculate the sample variance of items in column
+        // NOTE: fold = summation symbol
         let variance = column
             .values()
             .fold(0.0, |acc, &n| acc + (n - mean) * (n - mean))
@@ -34,7 +38,7 @@ impl Transform for ZScoreNormalization {
         let std_deviation = variance.sqrt();
 
         for value in column.values_mut() {
-            *value = (*value - mean) / std_deviation;
+            (*value) = ((*value) - mean) / std_deviation;
         }
 
         Ok(())

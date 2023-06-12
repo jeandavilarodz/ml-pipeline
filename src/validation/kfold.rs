@@ -26,6 +26,7 @@ impl Partitioner for KFold {
         label_column_idx: usize,
         parameters: HashMap<String, Numeric>,
     ) -> Result<Vec<(Vec<usize>, Vec<usize>)>, Box<dyn Error>> {
+        // Making sure the input is valid and correct
         if table.get_column_idx(label_column_idx).is_none() {
             return Err("Couldn't find index of column of target value!".into());
         }
@@ -47,8 +48,11 @@ impl Partitioner for KFold {
         // Generate indeces for k - 1 folds
         let mut ret = Vec::with_capacity(k);
         for idx in 0..k - 1 {
+            // Calculate the start and end value for the array
             let start = idx * fold_size;
             let end = (idx + 1) * fold_size;
+
+            // Push indexes to the output
             ret.push((
                 [&indexes[0..start], &indexes[end..]].concat(),
                 indexes[start..end].to_vec(),

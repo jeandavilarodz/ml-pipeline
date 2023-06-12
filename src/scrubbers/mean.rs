@@ -26,7 +26,10 @@ impl Scrubber for MeanScrubber {
         }
 
         let mean = sum / (count as f64);
-
+        
+        // Replace every value in the column that is None with the mean
+        // Note: the ".or" method in an Option type will replace the None option
+        // by the given value, in this case Some(mean).
         column.values_mut().for_each(|v| *v = v.or(Some(mean)));
         
         Ok(())

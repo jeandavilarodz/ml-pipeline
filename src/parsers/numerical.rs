@@ -16,9 +16,12 @@ impl Parser for NumericalParser {
         column: &Column<Option<String>>,
     ) -> Result<Column<Option<Numeric>>, Box<dyn Error>> {
         let mut ret = Column::<Option<Numeric>>::new();
+
+        // Iterate through each value in the column and try to parse it as a Numeric type
         for value in column.values() {
             ret.push(value.as_ref().and_then(|v| v.parse::<Numeric>().ok()));
         }
+
         Ok(ret)
     }
 }

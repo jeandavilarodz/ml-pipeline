@@ -17,14 +17,19 @@ impl Parser for NominalParser {
     fn parse(
         column: &Column<Option<String>>,
     ) -> Result<Column<Option<Numeric>>, Box<dyn Error>> {
+        // Create the returned column and a map to hold the unique values in the input
         let mut ret = Column::<Option<Numeric>>::new();
         let mut map = HashMap::<String, u32>::new();
         let mut next_bitshift = 0;
+
+        // Iterate through all values in the colum and check the map is a coded value exists
         for value in column.values() {
             let parsed = value.as_ref().map(|value| {
                 if let Some(found) = map.get(value) {
+                    // Create a new value of the coded value in the column
                     Numeric::from(*found)
                 } else {
+                    // No coded value was found in the map, so we make a new one
                     let coding = 1 << next_bitshift;
                     map.insert(value.to_owned(), coding);
                     next_bitshift += 1;
@@ -33,11 +38,17 @@ impl Parser for NominalParser {
             });
             ret.push(parsed);
         }
+
+        // The original map serves to convert string -> value, we must invert this to get a map 
+        // that converts values -> string
         let mut value_map = HashMap::<u32, String>::new();
-        for (value, encoded) in map {
-            value_map.insert(encoded, value);
+        for (value, encoding) in map {
+            value_map.insert(encoding, value);
         }
+
+        // Set the metadata in the column to store the coding to string map
         ret.set_metadata(value_map);
+    
         Ok(ret)
     }
 }
