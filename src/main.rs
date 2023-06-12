@@ -72,42 +72,50 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let evaluator = evaluation::get_evaluator(&configs.model.evaluation)?;
 
-    let model_builder = models::get_model_builder(&configs.model.name)?;
+    let mut model = models::get_model(&configs.model.name)?;
 
     let mut model_output = Vec::new();
     let mut validation_set = Vec::new();
     let mut training_set = Vec::new();
     for (fold_idx, (train_indices, validation_indices)) in folds.iter().enumerate() {
         println!("\nFOLD #: {}", fold_idx);
-        validation_set.clear();
-        training_set.clear();
-        model_output.clear();
 
+        // Create training data set
         println!("TRAINING");
+        training_set.clear();
         for &idx in train_indices {
             training_set.push(cleaned.get_row(idx));
         }
         println!("SIZE: {}", training_set.len());
 
-        let model = model_builder.build(&training_set, configs.model.label_index)?;
+        // Train model on training data set
+        model.train(&training_set, configs.model.label_index)?;
+
+        // Use model to evaluate performance of training data
+        model_output.clear();
         for sample in training_set.iter() {
             model_output.push(model.predict(sample)?);
         }
 
+        // Calculate performance
         let training_performance = evaluator(&model_output, &training_set, configs.model.label_index)?;
         println!("SCORE: {}", training_performance);
 
+        // Create validation data set
         println!("VALIDATION");
+        validation_set.clear();
         for &idx in validation_indices {
             validation_set.push(cleaned.get_row(idx));
         }
         println!("SIZE: {}", validation_set.len());
 
+        // Use model to predict labels on validation data
         model_output.clear();
         for sample in validation_set.iter() {
             model_output.push(model.predict(sample)?);
         }
 
+        // Calculate validation performance
         let validation_performance = evaluator(&model_output, &validation_set, configs.model.label_index)?;
         println!("SCORE: {}", validation_performance);
     }

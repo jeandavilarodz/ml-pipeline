@@ -1,31 +1,34 @@
-use num_traits::ToPrimitive;
-
 use super::Model;
-use super::ModelFactory;
+
+use num_traits::ToPrimitive;
+use rand::Rng;
 
 use crate::types::Numeric;
 
 use std::collections::HashMap;
 use std::error::Error;
 
-pub struct NullModel {
+pub struct NullClassificationModel {
     return_value: Numeric,
 }
 
-impl Model for NullModel {
+impl Model for NullClassificationModel {
+    fn new() -> Self {
+        Self {
+            return_value: rand::thread_rng().gen::<f64>(),
+        }
+    }
+
     fn predict(&self, _sample: &Vec<&Numeric>) -> Result<Numeric, Box<dyn Error>> {
         Ok(self.return_value)
     }
-}
 
-pub struct NullModelFactory;
-
-impl ModelFactory for NullModelFactory {
-    fn build(
-        &self,
+    fn train(
+        &mut self,
         training_values: &Vec<Vec<&Numeric>>,
         target_value_idx: usize,
-    ) -> Result<Box<dyn Model>, Box<dyn Error>> {
+    ) -> Result<(), Box<dyn Error>> {
+        // Build a map of counters for the most common value
         let mut value_count = HashMap::new();
 
         for value in training_values.iter() {
@@ -36,30 +39,16 @@ impl ModelFactory for NullModelFactory {
             *counter += 1;
         }
 
+        // Grab the value of the counter with the largest value
         let mode = value_count
             .iter()
             .max_by_key(|&(_, count)| count)
             .map(|(val, _)| val)
             .ok_or("No mode found!")?;
 
-        Ok(Box::new(NullModel {
-            return_value: (1e-8 * (*mode as f64)),
-        }))
-    }
-}
+        // Make the new return value be the mode of the new dataset
+        self.return_value = 1e-8 * (*mode as f64);
 
-pub struct NullRegressionModelFactory;
-
-impl ModelFactory for NullRegressionModelFactory {
-    fn build(
-        &self,
-        training_values: &Vec<Vec<&Numeric>>,
-        target_value_idx: usize,
-    ) -> Result<Box<dyn Model>, Box<dyn Error>> {
-        let mean = training_values.iter().fold(0.0, |acc, val| {
-            acc + val[target_value_idx].to_f64().unwrap()
-        }) / training_values.len() as f64;
-
-        Ok(Box::new(NullModel { return_value: mean }))
+        Ok(())
     }
 }
