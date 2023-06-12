@@ -1,3 +1,12 @@
+// column.rs
+
+/// This contains the abstraction for a column in a table data structure. It consists of a
+/// dynamic array where values are kept, a column name (header) and some metadata about the
+/// values in the column used for the mapping between numeric value and ordinal/nominal
+/// data. It provides iterators so that algorithms can iterate through the values inside the
+/// column. It also has abstractions to manipulate and retrieve individual elements in a
+/// cell.
+
 use std::collections::HashMap;
 use std::fmt;
 

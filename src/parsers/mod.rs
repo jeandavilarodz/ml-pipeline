@@ -1,4 +1,5 @@
-//! This section includes the parsing logic for data in table
+//! This section includes the parsing logic for data in table. Only numerical, ordinal and nominal
+//! data can be specified.
 
 mod nominal;
 mod null;

@@ -14,11 +14,13 @@ use pipeline::models;
 use pipeline::evaluation;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // Check if user gave command line arguments
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         return Err("No command line arguments given!".into());
     }
 
+    // Open file specified on the path given as argument in the command line
     let file = File::open(&args[1])?;
     let configs: ConfigStruct = serde_yaml::from_reader(file)?;
 
@@ -44,6 +46,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Scrubbing stage, this stage replaces missing values and all missing
     // values are dealt with
     if let Some(configs) = configs.scrub {
+        // There was a scrub stage specified in the configuration file, iterate through each scrubber
+        // and clean features accordingly
         for config in configs {
             let scrubber = scrubbers::get_scrubber(&config.name)?;
             if let Some(column) = parsed.get_column_idx_mut(config.index) {
@@ -67,11 +71,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
+    // Create a training data partitioner for cross-correlation validaton
     let partitioner = validation::get_partitioner(&configs.model.validation.strategy)?;
     let folds = partitioner(&cleaned, configs.model.label_index, configs.model.validation.parameters)?;
 
+    // Fetch evaluator specified on configuration file
     let evaluator = evaluation::get_evaluator(&configs.model.evaluation)?;
 
+    // Fetch the model specified on configuration file
     let mut model = models::get_model(&configs.model.name)?;
 
     let mut model_output = Vec::new();

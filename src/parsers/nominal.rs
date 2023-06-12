@@ -1,4 +1,8 @@
-// numerical.rs
+// nominal.rs
+
+/// This parses values in the feature column as nominal values. Takes each unique 
+/// type of string and assigns them a value from 0 to 2^(N - 1). Where N is the 
+/// number of unique strings in the feature column.
 
 use super::Parser;
 use crate::data::column::Column;

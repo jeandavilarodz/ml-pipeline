@@ -1,4 +1,4 @@
-//! This contains the abstractions for all the ML models
+//! This module containes the evaluation strategies for a machine learning model
 
 mod classification_score;
 mod mse;

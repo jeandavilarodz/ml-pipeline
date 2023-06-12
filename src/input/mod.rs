@@ -1,4 +1,4 @@
-//! This contains logic to read input
+//! This contains logic to read input into a table data structure
 
 mod csv;
 

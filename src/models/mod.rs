@@ -1,4 +1,4 @@
-//! This contains the abstractions for all the ML models
+//! This module contains the implemented ML models
 
 mod null_classification;
 mod null_regression;

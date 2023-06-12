@@ -1,3 +1,10 @@
+// kfold.rs
+
+/// This file contains the logic to generate indexes corresponding to K-fold cross-validation.
+/// Uses the defined data frame and index of label columns to generate k list of indexes which
+/// the training and validation algorithm can use to index into the original data structure to
+/// generate sections of training and validation data to train a model.
+
 use crate::data::data_frame::DataFrame;
 use crate::types::Numeric;
 use super::Partitioner;

@@ -1,3 +1,8 @@
+// classification_score.rs
+
+/// This file contains the logic for the 0-1 evaluation strategy. Where the total amount of labeling errors
+/// are divided by the total number of labels.
+
 use super::Evaluator;
 use crate::types::Numeric;
 

@@ -1,5 +1,9 @@
 // ordinal.rs
 
+/// This parses values in the feature column as ordinal values. Takes each unique 
+/// type of string and assigns them a value from 0 to (N - 1). Where N is the 
+/// number of unique strings in the feature column.
+
 use super::Parser;
 use crate::data::column::Column;
 use crate::types::Numeric;

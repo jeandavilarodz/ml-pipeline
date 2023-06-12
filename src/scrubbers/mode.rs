@@ -1,4 +1,6 @@
-//! Scrubber that replaces the missing values with the most common value
+// mode.rs
+
+/// Scrubber that replaces the missing values with the most common value (mode)
 
 use super::Scrubber;
 use crate::data::column::Column;

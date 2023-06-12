@@ -1,3 +1,8 @@
+// numerical.rs
+
+/// This is a parser that takes in the input string and tries to parse it as a number.
+/// If the strings in the input column are not numeric then it places a missing value.
+
 use super::Parser;
 use crate::data::column::Column;
 use crate::types::Numeric;

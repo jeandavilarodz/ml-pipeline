@@ -8,6 +8,11 @@ use crate::types::Numeric;
 use std::collections::HashMap;
 use std::error::Error;
 
+// null_classification.rs
+
+/// This module implements a dummy classification model that labels samples as the most common label
+/// seen in the input training data.
+
 pub struct NullClassificationModel {
     return_value: Numeric,
 }

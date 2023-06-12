@@ -1,3 +1,7 @@
+// null.rs
+
+/// This is a test parser that sets everything to none.
+
 use super::Parser;
 use crate::data::column::Column;
 use crate::types::Numeric;

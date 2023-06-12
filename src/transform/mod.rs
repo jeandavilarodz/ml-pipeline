@@ -4,6 +4,8 @@ mod discretization;
 mod zscore;
 
 use crate::config::TransformStageConfigs;
+/// This module contains the logic to transform numerical data in a column of the DataFrame structure.
+
 use crate::data::data_frame::DataFrame;
 use crate::data::column::Column;
 use crate::types::Numeric;

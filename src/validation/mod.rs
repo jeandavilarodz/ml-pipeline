@@ -1,5 +1,8 @@
-pub mod kfold_stratified;
-pub mod kfold;
+//! This module contains the logic responsible for creating indexes into the original data structure
+//! to perform a cross-validation to evaluate a model
+
+mod kfold_stratified;
+mod kfold;
 
 use std::collections::HashMap;
 use std::error::Error;

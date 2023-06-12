@@ -1,3 +1,10 @@
+// kfold_stratified.rs
+
+/// This file contains the logic to generate indexes corresponding to a stratified K-fold cross-validation,
+/// where original class label distributions are conserved. Uses the defined data frame and index of label 
+/// columns to generate k lists of indexes which the training and validation algorithm can use to index 
+/// into the original data structure and generate sections of training and validation data to train an model.
+
 use crate::data::data_frame::DataFrame;
 use crate::types::Numeric;
 use super::Partitioner;

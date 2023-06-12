@@ -1,3 +1,7 @@
+// csv.rs
+
+/// This file contains the implementation for reading CSV formatted tabular data
+
 use super::Reader;
 use crate::data::column::Column;
 use crate::data::data_frame::DataFrame;

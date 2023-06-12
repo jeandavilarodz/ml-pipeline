@@ -1,3 +1,10 @@
+// data_frame.rs
+
+/// This is the data structure that abstracts values in a table. It is composed of multiple
+/// column abstractions (in column.rs) and a map that converts column header name into
+/// an index into the array of columns. It provides iterators so that algorithms can iterate
+/// over the columns and itself provides the abstraction to get a row from the table.
+
 use itertools::Itertools;
 
 use crate::data::column::Column;

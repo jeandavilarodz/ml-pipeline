@@ -1,3 +1,10 @@
+// discretization.rs
+
+/// This file contains the logic to implement two strategies for discretization of the input features. 
+/// The first strategy is equal-width discretization, where the data is split into a fixed number of
+/// bins. The second strategy is equal-frequency discretization, where the data is split into a
+/// fixed number of bins, but the number of items per bin is kept fixed.
+
 use num_traits::ToPrimitive;
 
 use super::Transform;

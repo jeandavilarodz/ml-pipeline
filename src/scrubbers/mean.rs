@@ -1,4 +1,6 @@
-//! Scrubber that replaces the missing values with the mean of the present values
+// mean.rs
+
+/// Scrubber that replaces the missing values with the mean of the present values.
 
 use super::Scrubber;
 use crate::data::column::Column;

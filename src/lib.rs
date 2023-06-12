@@ -1,3 +1,7 @@
+// lib.rs
+
+/// This file specifies the different modules in the project
+
 pub mod data;
 pub mod evaluation;
 pub mod input;

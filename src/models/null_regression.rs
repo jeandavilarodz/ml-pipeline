@@ -1,3 +1,8 @@
+// null_regression.rs
+
+/// This module implements a dummy regression model that predicts trends as the average of all
+/// output values in the original training data set.
+
 use super::Model;
 
 use num_traits::ToPrimitive;

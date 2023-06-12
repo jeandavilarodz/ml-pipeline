@@ -1,3 +1,8 @@
+// zscore.rs
+
+/// This module implements the logic for z-score standardization where the mean and sample variance is
+/// used to modify the range of values of the input data to be from -1 to 1
+
 use std::collections::HashMap;
 
 use super::Transform;
