@@ -1,0 +1,68 @@
+input:
+  address: datasets/house-votes-84.data
+  format: csv
+  missing_values:
+    - "?"
+  headers: false
+
+parsing:
+  - nominal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+
+scrub:
+  - name: mode
+    index: 1
+  - name: mode
+    index: 2
+  - name: mode
+    index: 3
+  - name: mode
+    index: 4
+  - name: mode
+    index: 5
+  - name: mode
+    index: 6
+  - name: mode
+    index: 7
+  - name: mode
+    index: 8
+  - name: mode
+    index: 9
+  - name: mode
+    index: 10
+  - name: mode
+    index: 11
+  - name: mode
+    index: 12
+  - name: mode
+    index: 13
+  - name: mode
+    index: 14
+  - name: mode
+    index: 15
+  - name: mode
+    index: 16
+
+model:
+  name: null-regression
+  label_index: 0
+  validation: 
+    strategy: kfold
+    parameters:
+      num_folds: 10
+  evaluation: mse

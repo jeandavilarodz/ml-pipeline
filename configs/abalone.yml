@@ -1,0 +1,44 @@
+input:
+  address: datasets/abalone.data
+  format: csv
+  missing_values:
+    - None
+  headers: false
+
+parsing:
+  - ordinal
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+
+scrub:
+  - name: mode
+    index: 0
+  - name: mode
+    index: 1
+  - name: mode
+    index: 2
+  - name: mode
+    index: 3
+  - name: mode
+    index: 4
+  - name: mode
+    index: 5
+  - name: mode
+    index: 6
+  - name: mode
+    index: 7
+
+model:
+  name: null-regression
+  label_index: 8
+  validation: 
+    strategy: kfold
+    parameters:
+      num_folds: 10
+  evaluation: mse

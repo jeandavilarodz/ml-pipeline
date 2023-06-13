@@ -1,0 +1,62 @@
+input:
+  address: datasets/forestfires.data
+  format: csv
+  missing_values:
+    - "None"
+  headers: true
+
+parsing:
+  - ordinal
+  - ordinal
+  - ordinal
+  - ordinal
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+
+scrub:
+  - name: mode
+    index: 0
+  - name: mode
+    index: 1
+  - name: mode
+    index: 2
+  - name: mode
+    index: 3
+  - name: mean
+    index: 4
+  - name: mean
+    index: 5
+  - name: mean
+    index: 6
+  - name: mean
+    index: 7
+  - name: mean
+    index: 8
+  - name: mean
+    index: 9
+  - name: mean
+    index: 10
+  - name: mean
+    index: 11
+
+transform:
+  - name: log10
+    index: 12
+    parameters:
+      offset: 5.0
+
+model:
+  name: null-regression
+  label_index: 12
+  validation: 
+    strategy: kfold
+    parameters:
+      num_folds: 10
+  evaluation: classification-score

@@ -1,6 +1,6 @@
 // null.rs
 
-/// This is a test parser that sets everything to none.
+/// This is a test parser that invalidates a column
 
 use super::Parser;
 use crate::data::column::Column;
@@ -12,12 +12,8 @@ pub struct NullParser;
 
 impl Parser for NullParser {
     fn parse(
-        column: &Column<Option<String>>,
-    ) -> Result<Column<Option<Numeric>>, Box<dyn Error>> {
-        let mut ret = Column::<Option<Numeric>>::new();
-        for _value in column.values() {
-            ret.push(None);
-        }
-        Ok(ret)
+        _column: &Column<Option<String>>,
+    ) -> Result<Option<Column<Option<Numeric>>>, Box<dyn Error>> {
+        Ok(None)
     }
 }

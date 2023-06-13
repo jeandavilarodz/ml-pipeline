@@ -16,7 +16,7 @@ pub struct NominalParser;
 impl Parser for NominalParser {
     fn parse(
         column: &Column<Option<String>>,
-    ) -> Result<Column<Option<Numeric>>, Box<dyn Error>> {
+    ) -> Result<Option<Column<Option<Numeric>>>, Box<dyn Error>> {
         // Create the returned column and a map to hold the unique values in the input
         let mut ret = Column::<Option<Numeric>>::new();
         let mut map = HashMap::<String, u32>::new();
@@ -49,6 +49,6 @@ impl Parser for NominalParser {
         // Set the metadata in the column to store the coding to string map
         ret.set_metadata(value_map);
     
-        Ok(ret)
+        Ok(Some(ret))
     }
 }

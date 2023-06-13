@@ -1,0 +1,52 @@
+input:
+  address: datasets/breast-cancer-wisconsin.data
+  format: csv
+  missing_values:
+    - "?"
+  headers: false
+
+parsing:
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+  - numeric
+
+scrub:
+  - name: mode
+    index: 0
+  - name: mode
+    index: 1
+  - name: mode
+    index: 2
+  - name: mode
+    index: 3
+  - name: mode
+    index: 4
+  - name: mode
+    index: 5
+  - name: mode
+    index: 6
+  - name: mode
+    index: 7
+  - name: mode
+    index: 8
+  - name: mode
+    index: 9
+  - name: mode
+    index: 10
+
+model:
+  name: null-classifier
+  label_index: 10
+  validation: 
+    strategy: stratified-kfold
+    parameters:
+      num_folds: 10
+  evaluation: classification-score

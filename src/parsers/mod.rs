@@ -15,10 +15,10 @@ use std::error::Error;
 pub trait Parser {
     fn parse(
         column: &Column<Option<String>>,
-    ) -> Result<Column<Option<Numeric>>, Box<dyn Error>>;
+    ) -> Result<Option<Column<Option<Numeric>>>, Box<dyn Error>>;
 }
 
-type ParseFnPtr = fn(&Column<Option<String>>) -> Result<Column<Option<Numeric>>, Box<dyn Error>>;
+type ParseFnPtr = fn(&Column<Option<String>>) -> Result<Option<Column<Option<Numeric>>>, Box<dyn Error>>;
 
 pub fn get_parser(name: &str) -> Result<ParseFnPtr, Box<dyn Error>> {
     match name {
@@ -42,7 +42,11 @@ pub fn parse_input(
     let mut parsed_cols: Vec<Column<Option<Numeric>>> = Vec::new();
     for (parser, col) in parsers.iter().zip(table.columns()) {
         let parser = get_parser(parser.as_str())?;
-        let mut new_col = parser(col)?;
+        let new_col = parser(col)?;
+        if new_col.is_none() {
+            continue;
+        }
+        let mut new_col = new_col.unwrap();
         if let Some(name) = col.get_name() {
             new_col.set_name(name.to_owned());
         }

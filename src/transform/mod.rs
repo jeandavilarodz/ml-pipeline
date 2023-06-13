@@ -2,6 +2,7 @@
 
 mod discretization;
 mod zscore;
+mod log10;
 
 use crate::config::TransformStageConfigs;
 
@@ -26,6 +27,7 @@ pub fn get_transform(name: &str) -> Result<TransformFnPtr, Box<dyn Error>> {
         "equal-frequency-discretization" => Ok(discretization::EqualFrequencyDiscretization::apply),
         "equal-width-discretization" => Ok(discretization::EqualWidthDiscretization::apply),
         "zscore" => Ok(zscore::ZScoreNormalization::apply),
+        "log10" => Ok(log10::Log10::apply),
         _ => Err("Invalid transform name given: {name}".into()),
     }
 }

@@ -112,6 +112,10 @@ where
         }
         writeln!(f, "...")?;
         writeln!(f, "{:?}", self.values.last().unwrap())?;
+        if let Some(map) = &self.metadata {
+            writeln!(f, "METADATA:")?;
+            writeln!(f, "{:#?}", map)?;
+        }
         Ok(())
     }
 }

@@ -16,7 +16,7 @@ pub struct OrdinalParser;
 impl Parser for OrdinalParser {
     fn parse(
         column: &Column<Option<String>>,
-    ) -> Result<Column<Option<Numeric>>, Box<dyn Error>> {
+    ) -> Result<Option<Column<Option<Numeric>>>, Box<dyn Error>> {
         let mut ret = Column::<Option<Numeric>>::new();
         let mut map = Vec::<String>::new();
 
@@ -45,6 +45,6 @@ impl Parser for OrdinalParser {
         // Set the metadata in the return column to store the numeric -> string mapping
         ret.set_metadata(value_map);
 
-        Ok(ret)
+        Ok(Some(ret))
     }
 }
