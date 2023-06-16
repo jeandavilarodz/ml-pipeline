@@ -20,18 +20,20 @@ impl Evaluator for ClassificationScoreEvaluator {
             return Err("Predictions and targets are not of the same size!".into());
         }
 
-        let correct = predictions
+        let num_samples = training_samples.len();
+
+        let error_count = predictions
             .iter()
             .zip(training_samples.iter())
             .fold(0, |acc, (&pred, tar)| {
                 // If class values are the same they should be close to zero
-                if (pred - tar[training_label_idx]).abs() < 1e-8 {
+                if (pred - tar[training_label_idx]).abs() > 1e-8 {
                     acc + 1
                 } else {
                     acc
                 }
             });
 
-        Ok(correct as f64 / training_samples.len() as f64)
+        Ok(error_count as f64 / num_samples as f64)
     }
 }
