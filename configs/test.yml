@@ -18,11 +18,12 @@ transform:
   - name: zscore
     index: 2
 
-model:
-  name: null-classifier
+training:
   label_index: 2
+  evaluation: mse
+  model:
+    name: null-classifier
   validation: 
     strategy: stratified-kfold
     parameters:
       num_folds: 2
-  evaluation: mse

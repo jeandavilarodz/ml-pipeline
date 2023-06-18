@@ -13,13 +13,19 @@ pub struct ValidationConfigs {
     pub parameters: HashMap<String, f64>,
 }
 
-// Structure defining fields in the mandatory model stage
 #[derive(Debug, Deserialize)]
 pub struct ModelConfigs {
     pub name: String,
-    pub label_index: usize,
+    pub parameters: Option<HashMap<String, f64>>,
+}
+
+// Structure defining fields in the mandatory model stage
+#[derive(Debug, Deserialize)]
+pub struct TrainingConfigs {
+    pub model: ModelConfigs,
     pub evaluation: String,
     pub validation: ValidationConfigs,
+    pub label_index: usize,
 }
 
 // Structure defining fields in the mandatory input stage
@@ -53,5 +59,5 @@ pub struct ConfigStruct {
     pub parsing: Vec<String>,
     pub scrub: Option<Vec<ScrubbingStageConfigs>>,
     pub transform: Option<Vec<TransformStageConfigs>>,
-    pub model: ModelConfigs,
+    pub training: TrainingConfigs,
 }

@@ -18,19 +18,19 @@ pub struct NullClassificationModel {
 }
 
 impl Model for NullClassificationModel {
-    fn new() -> Self {
-        Self {
+    fn from_parameters(_parameters: &Option<HashMap<String, Numeric>>) -> Result<Self, Box<dyn Error>> {
+        Ok(Self {
             return_value: rand::thread_rng().gen::<f64>(),
-        }
+        })
     }
 
-    fn predict(&self, _sample: &Vec<&Numeric>) -> Result<Numeric, Box<dyn Error>> {
+    fn predict(&self, _sample: Box<[Numeric]>) -> Result<Numeric, Box<dyn Error>> {
         Ok(self.return_value)
     }
 
     fn train(
         &mut self,
-        training_values: &Vec<Vec<&Numeric>>,
+        training_values: &Vec<Box<[Numeric]>>,
         target_value_idx: usize,
     ) -> Result<(), Box<dyn Error>> {
         // Build a map of counters for the most common value

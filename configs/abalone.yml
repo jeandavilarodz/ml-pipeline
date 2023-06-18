@@ -34,11 +34,12 @@ scrub:
   - name: mode
     index: 7
 
-model:
-  name: null-regression
+training:
   label_index: 8
+  evaluation: mse
+  model:
+    name: null-regression
   validation: 
     strategy: kfold
     parameters:
       num_folds: 10
-  evaluation: mse

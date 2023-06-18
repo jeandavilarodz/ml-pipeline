@@ -5,10 +5,10 @@
 /// an index into the array of columns. It provides iterators so that algorithms can iterate
 /// over the columns and itself provides the abstraction to get a row from the table.
 
-use itertools::Itertools;
-
 use crate::data::column::Column;
+
 use std::collections::HashMap;
+use std::error::Error;
 
 #[derive(Debug)]
 pub struct DataFrame<T: Sized> {
@@ -16,13 +16,15 @@ pub struct DataFrame<T: Sized> {
     column_idx_map: HashMap<String, usize>,
 }
 
-impl<T> Default for DataFrame<T> {
+impl<T> Default for DataFrame<T> 
+where T: Clone {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> DataFrame<T> {
+impl<T> DataFrame<T> 
+where T: Clone {
     pub fn new() -> Self {
         Self {
             columns: Vec::new(),
@@ -68,7 +70,13 @@ impl<T> DataFrame<T> {
         }
     }
 
-    pub fn get_row(&self, idx: usize) -> Vec<&T> {
-        self.columns.iter().filter_map(|c| c.get(idx)).collect_vec()
+    pub fn get_row(&self, idx: usize) -> Result<Vec<T>, Box<dyn Error>> {
+        if self.columns.is_empty() {
+            return Err("No columns in the data structure!".into());
+        }
+        if self.columns[0].get(idx).is_none() {
+            return Err("Row not in the table!".into());
+        }
+        Ok(self.columns.iter().filter_map(|c| c.get(idx)).cloned().collect())
     }
 }

@@ -5,13 +5,13 @@ use std::error::Error;
 use std::fs::File;
 
 use pipeline::config::ConfigStruct;
+use pipeline::evaluation;
 use pipeline::input;
+use pipeline::models;
 use pipeline::parsers;
 use pipeline::scrubbers;
 use pipeline::transform;
 use pipeline::validation;
-use pipeline::models;
-use pipeline::evaluation;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Check if user gave command line arguments
@@ -72,14 +72,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // Create a training data partitioner for cross-correlation validaton
-    let partitioner = validation::get_partitioner(&configs.model.validation.strategy)?;
-    let folds = partitioner(&cleaned, configs.model.label_index, configs.model.validation.parameters)?;
+    let partitioner = validation::get_partitioner(&configs.training.validation.strategy)?;
+    let folds = partitioner(
+        &cleaned,
+        configs.training.label_index,
+        configs.training.validation.parameters,
+    )?;
 
     // Fetch evaluator specified on configuration file
-    let evaluator = evaluation::get_evaluator(&configs.model.evaluation)?;
+    let evaluator = evaluation::get_evaluator(&configs.training.evaluation)?;
 
     // Fetch the model specified on configuration file
-    let mut model = models::get_model(&configs.model.name)?;
+    let mut model = models::get_model(&configs.training.model.name, &None)?;
 
     let mut model_output = Vec::new();
     let mut validation_set = Vec::new();
@@ -91,39 +95,41 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("TRAINING");
         training_set.clear();
         for &idx in train_indices {
-            training_set.push(cleaned.get_row(idx));
+            training_set.push(cleaned.get_row(idx)?.into_boxed_slice());
         }
         println!("SIZE: {}", training_set.len());
 
         // Train model on training data set
-        model.train(&training_set, configs.model.label_index)?;
+        model.train(&training_set, configs.training.label_index)?;
 
         // Use model to evaluate performance of training data
         model_output.clear();
         for sample in training_set.iter() {
-            model_output.push(model.predict(sample)?);
+            model_output.push(model.predict(sample.clone())?);
         }
 
         // Calculate performance
-        let training_performance = evaluator(&model_output, &training_set, configs.model.label_index)?;
+        let training_performance =
+            evaluator(&model_output, &training_set, configs.training.label_index)?;
         println!("SCORE: {}", training_performance);
 
         // Create validation data set
         println!("VALIDATION");
         validation_set.clear();
         for &idx in validation_indices {
-            validation_set.push(cleaned.get_row(idx));
+            validation_set.push(cleaned.get_row(idx)?.into_boxed_slice());
         }
         println!("SIZE: {}", validation_set.len());
 
         // Use model to predict labels on validation data
         model_output.clear();
         for sample in validation_set.iter() {
-            model_output.push(model.predict(sample)?);
+            model_output.push(model.predict(sample.clone())?);
         }
 
         // Calculate validation performance
-        let validation_performance = evaluator(&model_output, &validation_set, configs.model.label_index)?;
+        let validation_performance =
+            evaluator(&model_output, &validation_set, configs.training.label_index)?;
         println!("SCORE: {}", validation_performance);
     }
 

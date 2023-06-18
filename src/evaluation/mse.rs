@@ -13,7 +13,7 @@ pub struct MeanSquaredErrorEvaluator;
 impl Evaluator for MeanSquaredErrorEvaluator {
     fn evaluate(
         predictions: &Vec<Numeric>,
-        training_samples: &Vec<Vec<&Numeric>>,
+        training_samples: &Vec<Box<[Numeric]>>,
         training_label_idx: usize,
     ) -> Result<f64, Box<dyn Error>> {
         if predictions.len() != training_samples.len() {

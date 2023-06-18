@@ -42,11 +42,12 @@ scrub:
   - name: mode
     index: 10
 
-model:
-  name: null-classifier
+training:
   label_index: 10
+  evaluation: classification-score
+  model:
+    name: null-classifier
   validation: 
     strategy: stratified-kfold
     parameters:
       num_folds: 10
-  evaluation: classification-score
