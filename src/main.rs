@@ -83,7 +83,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let evaluator = evaluation::get_evaluator(&configs.training.evaluation)?;
 
     // Fetch the model specified on configuration file
-    let mut model = models::get_model(&configs.training.model.name, &None)?;
+    let mut model_builder = models::get_model_builder(&configs.training.model.name)?;
+    model_builder.with_parameters(&configs.training.model.parameters)?;
 
     let mut model_output = Vec::new();
     let mut validation_set = Vec::new();
@@ -100,12 +101,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("SIZE: {}", training_set.len());
 
         // Train model on training data set
-        model.train(&training_set, configs.training.label_index)?;
+        model_builder.with_training_data(&training_set, configs.training.label_index)?;
+        let model = model_builder.train()?;
 
         // Use model to evaluate performance of training data
         model_output.clear();
         for sample in training_set.iter() {
-            model_output.push(model.predict(sample.clone())?);
+            model_output.push(model.predict(sample.clone()));
         }
 
         // Calculate performance
@@ -124,7 +126,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Use model to predict labels on validation data
         model_output.clear();
         for sample in validation_set.iter() {
-            model_output.push(model.predict(sample.clone())?);
+            model_output.push(model.predict(sample.clone()));
         }
 
         // Calculate validation performance

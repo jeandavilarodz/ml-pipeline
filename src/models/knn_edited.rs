@@ -1,6 +1,6 @@
-// knn_condensed.rs
+// knn_edited.rs
 
-//! This file implements the logic to train a condensed k-nearest neighbor learner
+//! This file implements the logic to train an edited k-nearest neighbor learner
 
 use super::Model;
 use super::ModelTrainer;
@@ -13,14 +13,14 @@ use std::error::Error;
 
 use num_traits::ToPrimitive;
 
-pub struct CondensedKNearestNeighborTrainer {
+pub struct EditedKNearestNeighborTrainer {
     training_data: Option<Vec<Box<[Numeric]>>>,
     num_neighbors: Option<usize>,
     label_index: Option<usize>,
     model_snapshot: Vec<Box<[Numeric]>>,
 }
 
-impl ModelTrainer for CondensedKNearestNeighborTrainer {
+impl ModelTrainer for EditedKNearestNeighborTrainer {
     fn new() -> Self
     where
         Self: Sized,
@@ -71,12 +71,7 @@ impl ModelTrainer for CondensedKNearestNeighborTrainer {
         };
 
         // Predict values and if the label doesn't match add the input value to the set
-        for sample in self
-            .training_data
-            .as_ref()
-            .ok_or("No training data!")?
-            .into_iter()
-        {
+        for sample in self.training_data.as_ref().ok_or("No training data!")?.into_iter() {
             let prediction = model.predict(sample.clone());
             if (prediction - sample[model.label_index]).abs() < 1e-8 {
                 self.model_snapshot.push(sample.clone());
