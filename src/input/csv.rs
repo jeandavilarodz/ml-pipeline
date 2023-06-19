@@ -34,6 +34,20 @@ impl Reader for CsvReader {
                 .zip(columns.iter_mut())
                 .for_each(|(header, col)| col.set_name(header.trim().to_owned()));
         }
+        else {
+            // Need to do this because the headers() call will remove the first row from the iterator
+            for (entry, col) in first.iter().zip(columns.iter_mut()) {
+                // Trim the whitespace of the entry
+                let entry = entry.trim().to_owned();
+                if missing_values.contains(&entry) {
+                    // The entry is in the list of missing values, therefore it should be marked as none
+                    col.push(None);
+                } else {
+                    // Push the entry as some value
+                    col.push(Some(entry));
+                }
+            }
+        }
 
         // For each record in the input file, push the value to the corresponding column
         for rec in reader.records() {

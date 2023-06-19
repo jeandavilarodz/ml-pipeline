@@ -2,8 +2,8 @@ input:
   address: datasets/iris/iris.data
   format: csv
   missing_values:
-    - none
-  headers: true
+    - None
+  headers: false
 
 parsing:
   - numeric
