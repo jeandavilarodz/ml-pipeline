@@ -61,8 +61,8 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
     }
 
     fn train(&mut self) -> Result<Box<dyn Model>, Box<dyn Error>> {
-        let training_data = self.training_data.as_mut().ok_or("No training data!")?;
-        training_data.extend(self.model_snapshot.iter().cloned());
+        let mut training_data = self.model_snapshot.clone();
+        training_data.extend(self.training_data.as_ref().unwrap().iter().cloned());
 
         let mut model = KNearestNeighbor {
             num_neighbors: self.num_neighbors.ok_or("no num_neighbors")?,
