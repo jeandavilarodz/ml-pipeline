@@ -25,7 +25,7 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
         Self: Sized,
     {
         Self {
-            num_neighbors: None,
+            num_neighbors: Some(1),
             training_data: None,
             label_index: None,
             epsilon:  1e-8,
@@ -64,6 +64,7 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
     fn train(&mut self) -> Result<Box<dyn Model>, Box<dyn Error>> {
         let mut training_data = self.model_snapshot.clone();
         training_data.extend(self.training_data.as_ref().unwrap().iter().cloned());
+        println!("{:?}", training_data.len());
 
         let mut model = KNearestNeighbor {
             num_neighbors: self.num_neighbors.ok_or("no num_neighbors")?,
@@ -80,6 +81,10 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
         }
 
         self.model_snapshot = model.label_examples.clone();
+
+        println!("{:?}", self.model_snapshot.len());
+
+        //model.generate_voronoi_diagram()?;
 
         Ok(Box::new(model))
     }

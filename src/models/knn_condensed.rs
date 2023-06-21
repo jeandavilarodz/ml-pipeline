@@ -87,7 +87,7 @@ impl ModelTrainer for CondensedKNearestNeighborTrainer {
         }
 
         self.model_snapshot.extend(new_samples.iter().cloned());
-        println!("Model snapshot: {:?}", self.model_snapshot);
+        println!("Model snapshot: {:?}", self.model_snapshot.len());
 
         model.generate_voronoi_diagram()?;
 
