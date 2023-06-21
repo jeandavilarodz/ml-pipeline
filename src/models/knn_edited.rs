@@ -28,7 +28,7 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
             num_neighbors: Some(1),
             training_data: None,
             label_index: None,
-            epsilon:  1e-8,
+            epsilon: 1e-8,
             model_snapshot: vec![],
         }
     }
@@ -40,6 +40,7 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
         if let Some(parameters) = parameters {
             if let Some(epsilon) = parameters.get("epsilon") {
                 self.epsilon = *epsilon;
+                println!("Set epsilon to {}", self.epsilon);
             }
         }
         Ok(())
@@ -80,8 +81,9 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
             // Predict value of current sample with te rest of the data set
             let prediction = model.predict(sample.clone());
 
-            if (prediction - sample[model.label_index]).abs() > 1e-8 {
+            if (prediction - sample[model.label_index]).abs() > self.epsilon {
                 // Sample was predicted incorrectly, therefore the sample is essential to the set
+                // and we must add it back to the set
                 model.label_examples.push(sample.clone());
             }
         }

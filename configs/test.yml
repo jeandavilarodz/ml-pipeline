@@ -17,6 +17,8 @@ training:
   evaluation: classification-score
   model:
     name: knn-edited
+    parameters:
+      epsilon: 0.001
   validation: 
     strategy: stratified-kfold
     parameters:
