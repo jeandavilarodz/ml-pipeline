@@ -63,10 +63,12 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
     }
 
     fn train(&mut self) -> Result<Box<dyn Model>, Box<dyn Error>> {
+        // Generate example label set for model
         let mut training_data = self.model_snapshot.clone();
         training_data.extend(self.training_data.as_ref().unwrap().iter().cloned());
         println!("{:?}", training_data.len());
 
+        // Generate model using internal parameters
         let mut model = KNearestNeighbor {
             num_neighbors: self.num_neighbors.ok_or("no num_neighbors")?,
             label_index: self.label_index.ok_or("no label_index")?,
@@ -88,6 +90,7 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
             }
         }
 
+        // Save a snapshot of the label examples in the model as a snapshot
         self.model_snapshot = model.label_examples.clone();
 
         println!("{:?}", self.model_snapshot.len());
