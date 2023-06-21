@@ -1,26 +1,43 @@
 //! This module contains the implemented ML models
 
-mod null_classification;
-mod null_regression;
+mod knn_classifier;
+mod knn_condensed;
+mod knn_edited;
+mod null;
 
 use crate::types::Numeric;
 
+use std::collections::HashMap;
 use std::error::Error;
 
 pub trait Model {
-    fn new() -> Self where Self: Sized;
-    fn predict(&self, sample: &Vec<&Numeric>) -> Result<Numeric, Box<dyn Error>>;
-    fn train(
-        &mut self,
-        training_values: &Vec<Vec<&Numeric>>,
-        target_value_idx: usize,
-    ) -> Result<(), Box<dyn Error>>;
+    fn predict(&self, sample: Box<[Numeric]>) -> Numeric;
 }
 
-pub fn get_model(model_name: &str) -> Result<Box<dyn Model>, Box<dyn Error>> {
+pub trait ModelTrainer {
+    fn new() -> Self
+    where
+        Self: Sized;
+    fn with_parameters(
+        &mut self,
+        parameters: &Option<HashMap<String, Numeric>>,
+    ) -> Result<(), Box<dyn Error>>;
+    fn with_training_data(
+        &mut self,
+        training_values: &Vec<Box<[Numeric]>>,
+        target_value_idx: usize,
+    ) -> Result<(), Box<dyn Error>>;
+    fn train(&mut self) -> Result<Box<dyn Model>, Box<dyn Error>>;
+}
+
+pub fn get_model_builder(model_name: &str) -> Result<Box<dyn ModelTrainer>, Box<dyn Error>> {
     match model_name {
-        "null-regression" => Ok(Box::new(null_regression::NullRegressionModel::new())),
-        "null-classifier" => Ok(Box::new(null_classification::NullClassificationModel::new())),
+        "null-regression" => Ok(Box::new(null::NullRegressionModelTrainer::new())),
+        "null-classifier" => Ok(Box::new(null::NullClassificationModelTrainer::new())),
+        "knn-condensed" => Ok(Box::new(
+            knn_condensed::CondensedKNearestNeighborTrainer::new(),
+        )),
+        "knn-edited" => Ok(Box::new(knn_edited::EditedKNearestNeighborTrainer::new())),
         _ => Err("Unsupported model: {model_name}".into()),
     }
 }

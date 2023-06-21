@@ -105,7 +105,8 @@ impl Partitioner for StratifiedKFold {
         println!("FOLD: {}", k);
         for indexes in label_indices.values() {
             // Calculate the fold size and extending by the residual value
-            let fold_size = (indexes.len() / k) + (indexes.len() % k);
+            let mut fold_size = indexes.len() / k;
+            fold_size += indexes.len() % fold_size;
             let end = indexes.len();
             let start = end - fold_size;
             validation_indices.extend(indexes[start..end].to_vec());

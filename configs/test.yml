@@ -1,28 +1,25 @@
 input:
-  address: datasets/test.csv
+  address: datasets/iris/iris.data
   format: csv
   missing_values:
-    - none
-  headers: true
+    - None
+  headers: false
 
 parsing:
-  - ordinal
-  - ordinal
   - numeric
+  - numeric
+  - numeric
+  - numeric
+  - nominal
 
-scrub:
-  - name: mean
-    index: 2
-
-transform:
-  - name: zscore
-    index: 2
-
-model:
-  name: null-classifier
-  label_index: 2
+training:
+  label_index: 4
+  evaluation: classification-score
+  model:
+    name: knn-edited
+    parameters:
+      epsilon: 0.001
   validation: 
     strategy: stratified-kfold
     parameters:
-      num_folds: 2
-  evaluation: mse
+      num_folds: 10

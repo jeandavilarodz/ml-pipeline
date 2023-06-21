@@ -35,11 +35,12 @@ scrub:
   - name: mode
     index: 7
 
-model:
-  name: null-classifier
+training:
   label_index: 8
+  evaluation: classification-score
+  model:
+    name: null-classifier
   validation: 
     strategy: kfold
     parameters:
       num_folds: 10
-  evaluation: classification-score

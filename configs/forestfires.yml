@@ -52,11 +52,12 @@ transform:
     parameters:
       offset: 5.0
 
-model:
-  name: null-regression
+training:
   label_index: 12
+  evaluation: classification-score
+  model:
+    name: null-regression
   validation: 
     strategy: kfold
     parameters:
       num_folds: 10
-  evaluation: classification-score
