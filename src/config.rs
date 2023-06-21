@@ -24,7 +24,8 @@ pub struct ModelConfigs {
 pub struct TrainingConfigs {
     pub model: ModelConfigs,
     pub evaluation: String,
-    pub validation: ValidationConfigs,
+    pub partitioning: ValidationConfigs,
+    pub strategy: String,
     pub label_index: usize,
 }
 

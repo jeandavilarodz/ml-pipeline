@@ -13,13 +13,14 @@ parsing:
   - nominal
 
 training:
+  strategy: simple
   label_index: 4
-  evaluation: classification-score
   model:
     name: knn-edited
     parameters:
       epsilon: 0.001
-  validation: 
+  partitioning: 
     strategy: stratified-kfold
     parameters:
       num_folds: 10
+  evaluation: classification-score

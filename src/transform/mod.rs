@@ -34,7 +34,7 @@ pub fn get_transform(name: &str) -> Result<TransformFnPtr, Box<dyn Error>> {
 
 pub fn apply(
     table: &mut DataFrame<Numeric>,
-    parameters: Vec<TransformStageConfigs>
+    parameters: &Vec<TransformStageConfigs>
 ) -> Result<(), Box<dyn Error>> {
     for parameter in parameters.into_iter() {
         let transform = get_transform(parameter.name.as_str())?;
