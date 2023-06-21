@@ -8,6 +8,12 @@ use crate::types::Numeric;
 
 use std::collections::HashMap;
 
+use itertools::Itertools;
+use plotly::color::Rgb;
+use plotly::common::{Fill, Marker, Mode, Title};
+use plotly::layout::Axis;
+use plotly::{Layout, Plot, Scatter};
+
 pub struct KNearestNeighbor {
     pub label_examples: Vec<Box<[Numeric]>>,
     pub label_index: usize,
@@ -57,4 +63,64 @@ fn euclidean_distance(row1: Box<[Numeric]>, row2: Box<[Numeric]>) -> Numeric {
 
     // Return the distance
     distance.sqrt()
+}
+
+impl KNearestNeighbor {
+    // This function takes a vector of training data and generate the voronoi diagram
+    // using plotters
+    pub fn generate_voronoi_diagram(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let points = &self.label_examples;
+        let index = (0, 3);
+        let voronoi_points = points
+            .iter()
+            .cloned()
+            .map(|p| voronoi::Point::new(p[index.0], p[index.1]))
+            .collect_vec();
+        let diagram = voronoi::voronoi(voronoi_points, 10.0);
+        let polygons = voronoi::make_polygons(&diagram);
+
+        let mut triangles = Vec::new();
+        for polygon in polygons {
+            let (x, y) = polygon.into_iter().map(|p| (p.x(), p.y())).unzip();
+            triangles.push(
+                Scatter::new(x, y)
+                    .fill(Fill::None)
+                    .mode(Mode::Lines)
+                    .marker(Marker::new().color(Rgb::new(0, 0, 0))),
+            );
+        }
+
+        let mut plot = Plot::new();
+        for triangle in triangles {
+            plot.add_trace(triangle);
+        }
+
+        let (sx, sy) = points
+            .iter()
+            .cloned()
+            .map(|p| (p[index.0], p[index.1]))
+            .unzip();
+        let class_labels = points
+            .iter()
+            .cloned()
+            .map(|p| format!("class: {}", p.last().unwrap().to_string()))
+            .collect_vec();
+
+        plot.add_trace(
+            Scatter::new(sx, sy)
+                .mode(Mode::Markers)
+                .marker(Marker::new().color(Rgb::new(0, 0, 0)))
+                .name("Reference Points")
+                .text_array(class_labels),
+        );
+        let layout = Layout::new()
+            .title(Title::new("Data Labels Hover"))
+            .x_axis(Axis::new().title(Title::new(&format!("x[{}]", index.0))))
+            .y_axis(Axis::new().title(Title::new(&format!("x[{}]", index.1))));
+        plot.set_layout(layout);
+
+        plot.show();
+
+        Ok(())
+    }
 }
