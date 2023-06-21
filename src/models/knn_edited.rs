@@ -74,9 +74,15 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
 
         // Predict values and if the label doesn't match add the input value to the set
         for (idx, sample) in training_data.iter().enumerate().rev() {
+            // Remove current sample from list of label examples
+            model.label_examples.remove(idx);
+
+            // Predict value of current sample with te rest of the data set
             let prediction = model.predict(sample.clone());
-            if (prediction - sample[model.label_index]).abs() < 1e-8 {
-                model.label_examples.remove(idx);
+
+            if (prediction - sample[model.label_index]).abs() > 1e-8 {
+                // Sample was predicted incorrectly, therefore the sample is essential to the set
+                model.label_examples.push(sample.clone());
             }
         }
 
@@ -84,7 +90,7 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
 
         println!("{:?}", self.model_snapshot.len());
 
-        //model.generate_voronoi_diagram()?;
+        model.generate_voronoi_diagram()?;
 
         Ok(Box::new(model))
     }
