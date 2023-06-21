@@ -16,7 +16,7 @@ training:
   label_index: 4
   evaluation: classification-score
   model:
-    name: null-classifier
+    name: knn-condensed
   validation: 
     strategy: stratified-kfold
     parameters:

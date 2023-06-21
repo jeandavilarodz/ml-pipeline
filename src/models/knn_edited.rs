@@ -37,10 +37,11 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
         &mut self,
         parameters: &Option<HashMap<String, Numeric>>,
     ) -> Result<(), Box<dyn Error>> {
-        let parameters = parameters.as_ref().ok_or("No parameters given!")?;
-        self.epsilon = *parameters
-            .get("epsilon")
-            .unwrap_or(&1e-8);
+        if let Some(parameters) = parameters {
+            if let Some(epsilon) = parameters.get("epsilon") {
+                self.epsilon = *epsilon;
+            }
+        }
         Ok(())
     }
 

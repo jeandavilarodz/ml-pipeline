@@ -113,7 +113,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Calculate performance
         let training_performance =
             evaluator(&model_output, &training_set, configs.training.label_index)?;
-        println!("SCORE: {}", training_performance);
+        println!("ERROR: {}", training_performance);
 
         // Create validation data set
         println!("VALIDATION");
@@ -132,7 +132,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Calculate validation performance
         let validation_performance =
             evaluator(&model_output, &validation_set, configs.training.label_index)?;
-        println!("SCORE: {}", validation_performance);
+        println!("ERROR: {}", validation_performance);
     }
 
     Ok(())
