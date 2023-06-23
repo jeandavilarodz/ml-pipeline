@@ -10,8 +10,8 @@ use std::collections::HashMap;
 
 use itertools::Itertools;
 use plotly::color::Rgb;
-use plotly::common::{Fill, Marker, Mode, Title};
-use plotly::layout::Axis;
+use plotly::common::{Fill, Marker, Mode, Title, Position, Orientation};
+use plotly::layout::{Axis, Legend};
 use plotly::{Layout, Plot, Scatter};
 
 pub struct KNearestNeighbor {
@@ -79,20 +79,21 @@ impl KNearestNeighbor {
         let diagram = voronoi::voronoi(voronoi_points, 10.0);
         let polygons = voronoi::make_polygons(&diagram);
 
-        let mut triangles = Vec::new();
+        let mut voronoi_cells = Vec::new();
         for polygon in polygons {
             let (x, y) = polygon.into_iter().map(|p| (p.x(), p.y())).unzip();
-            triangles.push(
+            voronoi_cells.push(
                 Scatter::new(x, y)
                     .fill(Fill::None)
                     .mode(Mode::Lines)
-                    .marker(Marker::new().color(Rgb::new(0, 0, 0))),
+                    .marker(Marker::new().color(Rgb::new(0, 0, 0)))
+                    .show_legend(false),
             );
         }
 
         let mut plot = Plot::new();
-        for triangle in triangles {
-            plot.add_trace(triangle);
+        for cell in voronoi_cells.into_iter() {
+            plot.add_trace(cell);
         }
 
         let (sx, sy) = points
@@ -103,20 +104,38 @@ impl KNearestNeighbor {
         let class_labels = points
             .iter()
             .cloned()
-            .map(|p| format!("class: {}", p.last().unwrap().to_string()))
+            .map(|p| *p.last().unwrap())
             .collect_vec();
 
         plot.add_trace(
             Scatter::new(sx, sy)
-                .mode(Mode::Markers)
+                .mode(Mode::MarkersText)
+                .text_position(Position::TopCenter)
                 .marker(Marker::new().color(Rgb::new(0, 0, 0)))
                 .name("Reference Points")
-                .text_array(class_labels),
+                .text_array(
+                    class_labels
+                        .iter()
+                        .cloned()
+                        .map(|s| s.to_string())
+                        .collect_vec(),
+                ),
         );
         let layout = Layout::new()
             .title(Title::new("Data Labels Hover"))
-            .x_axis(Axis::new().title(Title::new(&format!("x[{}]", index.0))))
-            .y_axis(Axis::new().title(Title::new(&format!("x[{}]", index.1))));
+            .x_axis(
+                Axis::new()
+                    .title(Title::new(&format!("x[{}]", index.0)))
+                    .show_grid(true),
+            )
+            .y_axis(
+                Axis::new()
+                    .title(Title::new(&format!("x[{}]", index.1)))
+                    .show_grid(true),
+            )
+            .legend(Legend::new().orientation(Orientation::Horizontal))
+            .height(800)
+            .width(800);
         plot.set_layout(layout);
 
         plot.show();
