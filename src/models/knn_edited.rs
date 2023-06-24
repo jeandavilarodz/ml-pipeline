@@ -64,6 +64,7 @@ impl ModelBuilder for EditedKNearestNeighborTrainer {
                 }
             }
         }
+        self.features = Some(label_examples);
         Ok(())
     }
 

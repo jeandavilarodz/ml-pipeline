@@ -63,6 +63,7 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
                 }
             }
         }
+        self.features = Some(label_examples);
         Ok(())
     }
 

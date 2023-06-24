@@ -13,7 +13,7 @@ parsing:
   - nominal
 
 training:
-  strategy: simple
+  strategy: kx2-folds
   label_index: 4
   model:
     name: knn-edited
