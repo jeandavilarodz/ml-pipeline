@@ -61,7 +61,7 @@ impl Model for KNearestNeighbor {
             ("num_neighbors".into(), self.num_neighbors.to_string()),    
         ]);
         self.label_examples.iter().enumerate().for_each(|(idx, ex)| {
-            ret.insert(format!("label_example_{}", idx), ex.iter().fold("".to_string(), |acc, v| acc + &format!(",{}", v)));
+            ret.insert(format!("label_example_{}", idx), ex.iter().skip(1).fold(ex[0].to_string(), |acc, v| acc + &format!(",{}", v)));
         });
         return ret;
     }

@@ -113,7 +113,7 @@ pub fn train_and_evaluate(
     }
 
     // Choose the model with best performance
-    let (_best_model, best_performance) = models
+    let (best_model, best_performance) = models
         .iter()
         .min_by(|(_, perf_1), (_, perf_2)| perf_1.abs().partial_cmp(&perf_2.abs()).unwrap())
         .expect("No best model found!");
@@ -125,8 +125,10 @@ pub fn train_and_evaluate(
         / models.len() as f64;
     
     println!("Best model performance: {:?}", best_performance);
+    println!("Best model hyper-parameters:\n{:#?}", best_model.get_hyperparameters());
     println!("Average model performance: {:?}", avg_model_error_metric);
 
+    let best_hyperparameters = best_model.get_hyperparameters();
     let mut model_error_metrics = Vec::new();
     for _ in 0..5 {
         let equal_set_indexes = partition(
@@ -149,6 +151,7 @@ pub fn train_and_evaluate(
             }
 
             // Create two model instances
+            model_builder.with_features(&best_hyperparameters)?;
             let model1 = model_builder.build(&first_set, configs.training.label_index)?;
             let model2 = model_builder.build(&second_set, configs.training.label_index)?;
 
@@ -177,11 +180,15 @@ pub fn train_and_evaluate(
             )?;
 
             // Push model error metrics
-            model_error_metrics.push((model1_error_metric, model2_error_metric));
+            model_error_metrics.push(model1_error_metric);
+            model_error_metrics.push(model2_error_metric);
         }
     }
 
+    let average_error = model_error_metrics.iter().fold(0.0, |acc, m| acc + m) / (model_error_metrics.len() as f64);
+
     println!("Model error metrics: {:?}", model_error_metrics);
+    println!("Average error: {}", average_error);
 
     Ok(())
 }

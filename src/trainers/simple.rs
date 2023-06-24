@@ -75,6 +75,8 @@ pub fn train_and_evaluate(df: &DataFrame<Numeric>, configs: &ConfigStruct) -> Re
         let validation_performance =
             evaluator(&model_output, &validation_set, configs.training.label_index)?;
         println!("ERROR: {}", validation_performance);
+
+        println!("Model hyper-parameters:\n{:#?}", model.get_hyperparameters());
     }
 
     Ok(())
