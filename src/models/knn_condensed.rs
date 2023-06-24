@@ -3,33 +3,31 @@
 //! This file implements the logic to train a condensed k-nearest neighbor learner
 
 use super::Model;
-use super::ModelTrainer;
+use super::ModelBuilder;
 
 use crate::models::knn_classifier::KNearestNeighbor;
-use crate::types::Numeric;
+use crate::types::{Numeric, NUMERIC_DIGIT_PRECISION};
 
 use std::collections::HashMap;
 use std::error::Error;
 
 pub struct CondensedKNearestNeighborTrainer {
-    training_data: Option<Vec<Box<[Numeric]>>>,
-    num_neighbors: Option<usize>,
-    label_index: Option<usize>,
+    features: Option<Vec<Box<[Numeric]>>>,
+    num_neighbors: usize,
     epsilon: f64,
-    model_snapshot: Vec<Box<[Numeric]>>,
+    show_voronoi: bool,
 }
 
-impl ModelTrainer for CondensedKNearestNeighborTrainer {
+impl ModelBuilder for CondensedKNearestNeighborTrainer {
     fn new() -> Self
     where
         Self: Sized,
     {
         Self {
-            num_neighbors: Some(1),
-            training_data: None,
-            label_index: None,
-            epsilon: 1e-8,
-            model_snapshot: vec![],
+            features: None,
+            num_neighbors: 1,
+            epsilon: NUMERIC_DIGIT_PRECISION,
+            show_voronoi: false,
         }
     }
 
@@ -45,51 +43,63 @@ impl ModelTrainer for CondensedKNearestNeighborTrainer {
         Ok(())
     }
 
-    fn with_training_data(
+    fn with_features(
         &mut self,
         training_values: &Vec<Box<[Numeric]>>,
-        label_idx: usize,
     ) -> Result<(), Box<dyn Error>> {
         if training_values.len() < 1 {
             return Err("Empty training set given!".into());
         }
-        if training_values.get(label_idx).is_none() {
-            return Err("Could not find target label in training data!".into());
-        }
-        self.training_data = Some(training_values.clone());
-        self.label_index = Some(label_idx);
+        self.features = Some(training_values.clone());
         Ok(())
     }
 
-    fn train(&mut self) -> Result<Box<dyn Model>, Box<dyn Error>> {
-        let training_data = self.training_data.as_mut().ok_or("No training data!")?;
-
-        if self.model_snapshot.is_empty() {
-            self.model_snapshot
-                .push(training_data.get(0).unwrap().clone());
-            println!("First model snapshot: {:?}", self.model_snapshot);
+    fn build(
+        &mut self,
+        training_values: &Vec<Box<[Numeric]>>,
+        target_value_idx: usize,
+    ) -> Result<Box<dyn Model>, Box<dyn Error>> {
+        if training_values.len() < 1 {
+            return Err("Empty training set given!".into());
+        }
+        if target_value_idx >= training_values[0].len() {
+            return Err("Target value index is out of bounds!".into());
         }
 
+        // Build iterator over training values
+        let mut training_data = training_values.iter();
+
+        // Build examples for the algorithm
+        let mut label_examples = Vec::new();
+
+        // If there are features, use them
+        if let Some(features) = self.features.as_ref() {
+            label_examples.extend(features.iter().cloned());
+        }
+
+        // If the label examples are empty then add first sample as a label example
+        if label_examples.is_empty() {
+            label_examples.push(training_data.next().unwrap().clone());
+        }
+
+        // Build k-nearest neighbors model with the label examples
         let mut model = KNearestNeighbor {
-            num_neighbors: self.num_neighbors.ok_or("no num_neighbors")?,
-            label_index: self.label_index.ok_or("no label_index")?,
-            label_examples: self.model_snapshot.clone(),
+            num_neighbors: self.num_neighbors,
+            label_index: target_value_idx,
+            label_examples: label_examples,
         };
 
         // Predict values and if the label doesn't match add the input value to the set
-        let mut new_samples = Vec::new();
-        for sample in training_data.iter() {
-            let prediction = model.predict(sample.to_owned());
+        for sample in training_data {
+            let prediction = model.predict(sample);
             if (prediction - sample[model.label_index]).abs() > self.epsilon {
                 model.label_examples.push(sample.clone());
-                new_samples.push(sample.clone());
             }
         }
 
-        self.model_snapshot.extend(new_samples.iter().cloned());
-        println!("Model snapshot: {:?}", self.model_snapshot.len());
-
-        model.generate_voronoi_diagram()?;
+        if self.show_voronoi {
+            model.generate_voronoi_diagram()?;
+        }
 
         Ok(Box::new(model))
     }

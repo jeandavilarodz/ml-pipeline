@@ -44,13 +44,12 @@ pub fn train_and_evaluate(df: &DataFrame<Numeric>, configs: &ConfigStruct) -> Re
         println!("SIZE: {}", training_set.len());
 
         // Train model on training data set
-        model_builder.with_training_data(&training_set, configs.training.label_index)?;
-        let model = model_builder.train()?;
+        let model = model_builder.build(&training_set, configs.training.label_index)?;
 
         // Use model to evaluate performance of training data
         model_output.clear();
         for sample in training_set.iter() {
-            model_output.push(model.predict(sample.clone()));
+            model_output.push(model.predict(sample));
         }
 
         // Calculate performance
@@ -69,7 +68,7 @@ pub fn train_and_evaluate(df: &DataFrame<Numeric>, configs: &ConfigStruct) -> Re
         // Use model to predict labels on validation data
         model_output.clear();
         for sample in validation_set.iter() {
-            model_output.push(model.predict(sample.clone()));
+            model_output.push(model.predict(sample));
         }
 
         // Calculate validation performance

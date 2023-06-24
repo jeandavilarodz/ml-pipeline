@@ -4,7 +4,7 @@
 
 use super::Model;
 
-use crate::types::Numeric;
+use crate::types::{Numeric, NUMERIC_DIGIT_PRECISION};
 
 use std::collections::HashMap;
 
@@ -21,13 +21,13 @@ pub struct KNearestNeighbor {
 }
 
 impl Model for KNearestNeighbor {
-    fn predict(&self, sample: Box<[Numeric]>) -> Numeric {
+    fn predict(&self, sample: &[Numeric]) -> Numeric {
         // Calculate distances between each example and the k nearest neighbors
         let mut distances = Vec::new();
         for (index, training_sample) in self.label_examples.iter().enumerate() {
             distances.push((
                 index,
-                euclidean_distance(training_sample.clone(), sample.clone()),
+                euclidean_distance(training_sample, sample),
             ));
         }
         // Sort the distances by distance
@@ -37,7 +37,7 @@ impl Model for KNearestNeighbor {
         let mut label_count = HashMap::new();
         for (idx, _) in distances[..self.num_neighbors].into_iter() {
             let label = self.label_examples[*idx][self.label_index];
-            let key = (label * 1e8) as i64;
+            let key = (label * NUMERIC_DIGIT_PRECISION) as i64;
             let counter = label_count.entry(key).or_insert(0);
             *counter += 1;
         }
@@ -50,11 +50,11 @@ impl Model for KNearestNeighbor {
             .expect("No mode found!");
 
         // return the most common label
-        (*mode as f64) * 1e-8
+        (*mode as f64) / NUMERIC_DIGIT_PRECISION
     }
 }
 
-fn euclidean_distance(row1: Box<[Numeric]>, row2: Box<[Numeric]>) -> Numeric {
+fn euclidean_distance(row1: &[Numeric], row2: &[Numeric]) -> Numeric {
     // Calculate the euclidean distance between the two rows
     let distance = row1
         .iter()
@@ -122,7 +122,7 @@ impl KNearestNeighbor {
                 ),
         );
         let layout = Layout::new()
-            .title(Title::new("Data Labels Hover"))
+            .title(Title::new("Voronoi Diagram Between Reference Points"))
             .x_axis(
                 Axis::new()
                     .title(Title::new(&format!("x[{}]", index.0)))

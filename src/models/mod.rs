@@ -11,10 +11,10 @@ use std::collections::HashMap;
 use std::error::Error;
 
 pub trait Model {
-    fn predict(&self, sample: Box<[Numeric]>) -> Numeric;
+    fn predict(&self, sample: &[Numeric]) -> Numeric;
 }
 
-pub trait ModelTrainer {
+pub trait ModelBuilder {
     fn new() -> Self
     where
         Self: Sized;
@@ -22,15 +22,15 @@ pub trait ModelTrainer {
         &mut self,
         parameters: &Option<HashMap<String, Numeric>>,
     ) -> Result<(), Box<dyn Error>>;
-    fn with_training_data(
+    fn with_features(&mut self, features: &Vec<Box<[Numeric]>>) -> Result<(), Box<dyn Error>>;
+    fn build(
         &mut self,
         training_values: &Vec<Box<[Numeric]>>,
         target_value_idx: usize,
-    ) -> Result<(), Box<dyn Error>>;
-    fn train(&mut self) -> Result<Box<dyn Model>, Box<dyn Error>>;
+    ) -> Result<Box<dyn Model>, Box<dyn Error>>;
 }
 
-pub fn get_model_builder(model_name: &str) -> Result<Box<dyn ModelTrainer>, Box<dyn Error>> {
+pub fn get_model_builder(model_name: &str) -> Result<Box<dyn ModelBuilder>, Box<dyn Error>> {
     match model_name {
         "null-regression" => Ok(Box::new(null::NullRegressionModelTrainer::new())),
         "null-classifier" => Ok(Box::new(null::NullClassificationModelTrainer::new())),
