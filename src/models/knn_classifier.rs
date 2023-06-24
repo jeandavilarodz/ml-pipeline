@@ -8,7 +8,6 @@ use crate::types::{Numeric, NUMERIC_DIGIT_PRECISION};
 
 use std::collections::HashMap;
 
-use itertools::Itertools;
 use plotly::color::Rgb;
 use plotly::common::{Fill, Marker, Mode, Title, Position, Orientation};
 use plotly::layout::{Axis, Legend};
@@ -24,9 +23,9 @@ impl Model for KNearestNeighbor {
     fn predict(&self, sample: &[Numeric]) -> Numeric {
         // Calculate distances between each example and the k nearest neighbors
         let mut distances = Vec::new();
-        for (index, training_sample) in self.label_examples.iter().enumerate() {
+        for training_sample in self.label_examples.iter() {
             distances.push((
-                index,
+                sample,
                 euclidean_distance(training_sample, sample),
             ));
         }
@@ -34,23 +33,22 @@ impl Model for KNearestNeighbor {
         distances.sort_by(|(_, x), (_, y)| x.abs().partial_cmp(&y.abs()).unwrap());
 
         // Get the label count of the k nearest neighbors
-        let mut label_count = HashMap::new();
-        for (idx, _) in distances[..self.num_neighbors].into_iter() {
-            let label = self.label_examples[*idx][self.label_index];
-            let key = (label * NUMERIC_DIGIT_PRECISION) as i64;
-            let counter = label_count.entry(key).or_insert(0);
+        let mut label_vote = HashMap::new();
+        for (neighbor, _) in distances[..self.num_neighbors].iter() {
+            let key = (neighbor[self.label_index] / NUMERIC_DIGIT_PRECISION) as i64;
+            let counter = label_vote.entry(key).or_insert(0);
             *counter += 1;
         }
 
         // Get the most common label
-        let mode = label_count
+        let mode = label_vote
             .iter()
             .max_by_key(|&(_, count)| count)
             .map(|(val, _)| val)
             .expect("No mode found!");
 
         // return the most common label
-        (*mode as f64) / NUMERIC_DIGIT_PRECISION
+        (*mode as f64) * NUMERIC_DIGIT_PRECISION
     }
 }
 
@@ -75,7 +73,7 @@ impl KNearestNeighbor {
             .iter()
             .cloned()
             .map(|p| voronoi::Point::new(p[index.0], p[index.1]))
-            .collect_vec();
+            .collect();
         let diagram = voronoi::voronoi(voronoi_points, 10.0);
         let polygons = voronoi::make_polygons(&diagram);
 
@@ -105,7 +103,7 @@ impl KNearestNeighbor {
             .iter()
             .cloned()
             .map(|p| *p.last().unwrap())
-            .collect_vec();
+            .collect::<Vec<f64>>();
 
         plot.add_trace(
             Scatter::new(sx, sy)
@@ -118,7 +116,7 @@ impl KNearestNeighbor {
                         .iter()
                         .cloned()
                         .map(|s| s.to_string())
-                        .collect_vec(),
+                        .collect(),
                 ),
         );
         let layout = Layout::new()

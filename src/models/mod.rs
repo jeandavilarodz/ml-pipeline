@@ -22,10 +22,10 @@ pub trait ModelBuilder {
         &mut self,
         parameters: &Option<HashMap<String, Numeric>>,
     ) -> Result<(), Box<dyn Error>>;
-    fn with_features(&mut self, features: &Vec<Box<[Numeric]>>) -> Result<(), Box<dyn Error>>;
+    fn with_features(&mut self, features: &[Box<[Numeric]>]) -> Result<(), Box<dyn Error>>;
     fn build(
         &mut self,
-        training_values: &Vec<Box<[Numeric]>>,
+        training_values: &[Box<[Numeric]>],
         target_value_idx: usize,
     ) -> Result<Box<dyn Model>, Box<dyn Error>>;
 }

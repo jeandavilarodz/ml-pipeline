@@ -17,7 +17,7 @@ pub fn train_and_evaluate(df: &DataFrame<Numeric>, configs: &ConfigStruct) -> Re
     // Create a training data partitioner for cross-correlation validaton
     let partitioner = validation::get_partitioner(&configs.training.partitioning.strategy)?;
     let folds = partitioner(
-        &df,
+        df,
         configs.training.label_index,
         configs.training.partitioning.parameters.clone(),
     )?;

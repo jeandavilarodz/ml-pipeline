@@ -27,7 +27,7 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
             features: None,
             num_neighbors: 1,
             epsilon: NUMERIC_DIGIT_PRECISION,
-            show_voronoi: false,
+            show_voronoi: true,
         }
     }
 
@@ -45,21 +45,21 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
 
     fn with_features(
         &mut self,
-        training_values: &Vec<Box<[Numeric]>>,
+        training_values: &[Box<[Numeric]>],
     ) -> Result<(), Box<dyn Error>> {
-        if training_values.len() < 1 {
+        if training_values.is_empty() {
             return Err("Empty training set given!".into());
         }
-        self.features = Some(training_values.clone());
+        self.features = Some(training_values.into());
         Ok(())
     }
 
     fn build(
         &mut self,
-        training_values: &Vec<Box<[Numeric]>>,
+        training_values: &[Box<[Numeric]>],
         target_value_idx: usize,
     ) -> Result<Box<dyn Model>, Box<dyn Error>> {
-        if training_values.len() < 1 {
+        if training_values.is_empty() {
             return Err("Empty training set given!".into());
         }
         if target_value_idx >= training_values[0].len() {
@@ -86,7 +86,7 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
         let mut model = KNearestNeighbor {
             num_neighbors: self.num_neighbors,
             label_index: target_value_idx,
-            label_examples: label_examples,
+            label_examples,
         };
 
         // Predict values and if the label doesn't match add the input value to the set

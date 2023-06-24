@@ -13,7 +13,7 @@ pub struct CsvReader;
 impl Reader for CsvReader {
     fn read(
         address: &str,
-        missing_values: &Vec<String>,
+        missing_values: &[String],
         headers: bool,
     ) -> Result<DataFrame<Option<String>>, Box<dyn Error>> {
         // Read input file, it errors when the file doesn't exist

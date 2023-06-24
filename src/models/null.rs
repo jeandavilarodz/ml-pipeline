@@ -40,13 +40,13 @@ impl ModelBuilder for NullRegressionModelTrainer {
         Ok(())
     }
 
-    fn with_features(&mut self, _features: &Vec<Box<[Numeric]>>) -> Result<(), Box<dyn Error>> {
+    fn with_features(&mut self, _features: &[Box<[Numeric]>]) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
 
     fn build(
         &mut self,
-        training_values: &Vec<Box<[Numeric]>>,
+        training_values: &[Box<[Numeric]>],
         target_value_idx: usize,
     ) -> Result<Box<dyn Model>, Box<dyn Error>> {
         // Calculate mean of labels
@@ -75,21 +75,21 @@ impl ModelBuilder for NullClassificationModelTrainer {
         Ok(())
     }
 
-    fn with_features(&mut self, _features: &Vec<Box<[Numeric]>>) -> Result<(), Box<dyn Error>> {
+    fn with_features(&mut self, _features: &[Box<[Numeric]>]) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
 
     fn build(
         &mut self,
-        training_values: &Vec<Box<[Numeric]>>,
+        training_values: &[Box<[Numeric]>],
         target_value_idx: usize,
     ) -> Result<Box<dyn Model>, Box<dyn Error>> {
         // Build a map of counters for the most common value
         let mut value_count = HashMap::new();
 
         // Populate the map with the counts of the most common values
-        for value in training_values.into_iter() {
-            let key = (value[target_value_idx] * NUMERIC_DIGIT_PRECISION)
+        for value in training_values.iter() {
+            let key = (value[target_value_idx] / NUMERIC_DIGIT_PRECISION)
                 .to_i64()
                 .ok_or("Could not turn Numeric into key!")?;
             let counter = value_count.entry(key).or_insert(0);
@@ -104,7 +104,7 @@ impl ModelBuilder for NullClassificationModelTrainer {
             .ok_or("No mode found!")?;
 
         Ok(Box::new(NullModel {
-            return_value: (*mode as f64) / NUMERIC_DIGIT_PRECISION,
+            return_value: (*mode as f64) * NUMERIC_DIGIT_PRECISION,
         }))
     }
 }

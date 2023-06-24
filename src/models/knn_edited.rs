@@ -18,7 +18,7 @@ pub struct EditedKNearestNeighborTrainer {
     show_voronoi: bool,
 }
 
-impl<'a> ModelBuilder for EditedKNearestNeighborTrainer {
+impl ModelBuilder for EditedKNearestNeighborTrainer {
     fn new() -> Self
     where
         Self: Sized,
@@ -27,7 +27,7 @@ impl<'a> ModelBuilder for EditedKNearestNeighborTrainer {
             num_neighbors: 1,
             epsilon: NUMERIC_DIGIT_PRECISION,
             features: None,
-            show_voronoi: false,
+            show_voronoi: true,
         }
     }
 
@@ -46,21 +46,21 @@ impl<'a> ModelBuilder for EditedKNearestNeighborTrainer {
 
     fn with_features(
         &mut self,
-        training_values: &Vec<Box<[Numeric]>>,
+        training_values: &[Box<[Numeric]>],
     ) -> Result<(), Box<dyn Error>> {
-        if training_values.len() < 1 {
+        if training_values.is_empty() {
             return Err("Empty training set given!".into());
         }
-        self.features = Some(training_values.clone());
+        self.features = Some(training_values.into());
         Ok(())
     }
 
     fn build(
         &mut self,
-        training_values: &Vec<Box<[Numeric]>>,
+        training_values: &[Box<[Numeric]>],
         target_value_idx: usize,
     ) -> Result<Box<dyn Model>, Box<dyn Error>> {
-        if training_values.len() < 1 {
+        if training_values.is_empty() {
             return Err("Empty training set given!".into());
         }
         if target_value_idx >= training_values[0].len() {
@@ -69,24 +69,30 @@ impl<'a> ModelBuilder for EditedKNearestNeighborTrainer {
 
         // Build examples for the algorithm
         let mut label_examples = Vec::new();
+
+        // If there are features given use them as label examples
+        let mut offset = 0;
         if let Some(features) = &self.features {
             label_examples.extend(features.iter().cloned());
+            offset += features.len();
         }
+
+        // Copy all the input training values as label examples
         label_examples.extend(training_values.iter().cloned());
 
         // Generate model using internal parameters
         let mut model = KNearestNeighbor {
             num_neighbors: self.num_neighbors,
             label_index: target_value_idx,
-            label_examples: label_examples,
+            label_examples,
         };
 
         // Predict values and if the label doesn't match add the input value to the set
         for (idx, sample) in training_values.iter().enumerate().rev() {
             // Remove current sample from list of label examples
-            model.label_examples.remove(idx);
+            model.label_examples.remove(idx + offset);
 
-            // Predict value of current sample with te rest of the data set
+            // Predict value of current sample with the rest of the data set
             let prediction = model.predict(sample);
 
             if (prediction - sample[model.label_index]).abs() > self.epsilon {
