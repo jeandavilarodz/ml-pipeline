@@ -13,7 +13,6 @@ use std::collections::HashMap;
 use std::error::Error;
 
 use rand::seq::SliceRandom;
-use rand::thread_rng;
 
 pub struct KFold;
 
@@ -38,7 +37,7 @@ impl Partitioner for KFold {
 
         // Shuffle indexes
         let mut indexes = (0..num_samples).collect::<Vec<usize>>();
-        indexes.shuffle(&mut thread_rng());
+        indexes.shuffle(&mut rand::thread_rng());
 
         // Generate indeces for k - 1 folds
         let mut ret = Vec::with_capacity(k);
