@@ -16,6 +16,13 @@ use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::error::Error;
 
+use plotly::common::{Mode, Title};
+use plotly::layout::{Axis, Shape};
+use plotly::{Layout, Plot, Scatter};
+use plotly::ImageFormat;
+
+const MAKE_PLOTS: bool = true;
+
 pub fn train_and_evaluate(
     df: &DataFrame<Numeric>,
     configs: &ConfigStruct,
@@ -50,7 +57,10 @@ pub fn train_and_evaluate(
     for &idx in training_indexes.iter() {
         training_and_testing_set.push(df.get_row(idx)?.into_boxed_slice());
     }
-    println!("training_and_testing_set.len(): {}", training_and_testing_set.len());
+    println!(
+        "training_and_testing_set.len(): {}",
+        training_and_testing_set.len()
+    );
     let training_and_testing_df = DataFrame::from_rows(training_and_testing_set)?;
 
     let mut first_set = Vec::new();
@@ -116,7 +126,11 @@ pub fn train_and_evaluate(
 
     // Print model hyperparameters with performance for debug
     for (model, error_metric) in models.iter() {
-        println!("error_metric: {}\nhyper-parameters:\n{:#?}", error_metric, model.get_hyperparameters());
+        println!(
+            "error_metric: {}\nhyper-parameters:\n{:#?}",
+            error_metric,
+            model.get_hyperparameters()
+        );
     }
 
     // Choose the model with best performance
@@ -130,9 +144,12 @@ pub fn train_and_evaluate(
         .iter()
         .fold(0.0, |acc, (_, model_error_metric)| acc + model_error_metric)
         / models.len() as f64;
-    
+
     println!("Best model performance: {:?}", best_performance);
-    println!("Best model hyper-parameters:\n{:#?}", best_model.get_hyperparameters());
+    println!(
+        "Best model hyper-parameters:\n{:#?}",
+        best_model.get_hyperparameters()
+    );
     println!("Average model performance: {:?}", avg_model_error_metric);
 
     let best_hyperparameters = best_model.get_hyperparameters();
@@ -185,10 +202,40 @@ pub fn train_and_evaluate(
         }
     }
 
-    let average_error = model_error_metrics.iter().fold(0.0, |acc, m| acc + m) / (model_error_metrics.len() as f64);
+    let average_error =
+        model_error_metrics.iter().fold(0.0, |acc, m| acc + m) / (model_error_metrics.len() as f64);
 
     println!("Model error metrics: {:?}", model_error_metrics);
     println!("Average error: {}", average_error);
+
+    if MAKE_PLOTS {
+        let mut plot = Plot::new();
+        let mut layout = Layout::new()
+        .title(Title::new("Error metric vs experiment"))
+        .x_axis(Axis::new().title(Title::new("Experiment number")))
+        .y_axis(Axis::new().title(Title::new("Error Metric")));
+
+        for (exp_num, metric) in model_error_metrics.iter().enumerate() {
+            layout.add_shape(
+                Shape::new()
+                    .shape_type(plotly::layout::ShapeType::Line)
+                    .x0(exp_num)
+                    .y0(0.0)
+                    .x1(exp_num)
+                    .y1(*metric)
+            )
+        }
+
+        plot.add_trace(
+            Scatter::new(vec![0.0..10.0], model_error_metrics)
+                .mode(Mode::Markers)
+                .name("Error Metric"),
+        );
+
+        plot.set_layout(layout);
+
+        plot.write_image("experiment.png", ImageFormat::PNG, 1280, 900, 1.0);
+    }
 
     Ok(())
 }
