@@ -78,7 +78,7 @@ impl KNearestNeighbor {
 
         let mut voronoi_cells = Vec::new();
         for polygon in polygons.iter() {
-            let (x, y) = polygon.into_iter().map(|p| (p.x(), p.y())).unzip();
+            let (x, y) = polygon.iter().map(|p| (p.x(), p.y())).unzip();
             voronoi_cells.push(
                 Scatter::new(x, y)
                     .fill(Fill::None)
