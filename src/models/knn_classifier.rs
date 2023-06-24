@@ -50,6 +50,21 @@ impl Model for KNearestNeighbor {
         // return the most common label
         (*mode as f64) * NUMERIC_DIGIT_PRECISION
     }
+
+    fn type_id(&self) -> &'static str {
+        "KNearestNeighbor"
+    }
+
+    fn get_hyperparameters(&self) -> HashMap<String, String> {
+        let mut ret = HashMap::from([
+            ("label_index".into(), self.label_index.to_string()),
+            ("num_neighbors".into(), self.num_neighbors.to_string()),    
+        ]);
+        self.label_examples.iter().enumerate().for_each(|(idx, ex)| {
+            ret.insert(format!("label_example_{}", idx), ex.iter().fold("".to_string(), |acc, v| acc + &format!(",{}", v)));
+        });
+        return ret;
+    }
 }
 
 fn euclidean_distance(row1: &[Numeric], row2: &[Numeric]) -> Numeric {

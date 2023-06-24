@@ -45,12 +45,24 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
 
     fn with_features(
         &mut self,
-        training_values: &[Box<[Numeric]>],
+        features: &HashMap<String, String>,
     ) -> Result<(), Box<dyn Error>> {
-        if training_values.is_empty() {
-            return Err("Empty training set given!".into());
+        let mut label_examples: Vec<Box<[Numeric]>> = Vec::new();
+        for (key, val) in features.iter() {
+            match key.as_str() {
+                "label_index" => {},
+                "num_neighbors" => {
+                    self.num_neighbors = val.parse::<usize>()?;
+                }
+                _ => {
+                    label_examples.push(
+                        val.split(",").filter_map(|v| {
+                            v.trim().parse::<Numeric>().ok()
+                        }).collect()
+                    );
+                }
+            }
         }
-        self.features = Some(training_values.into());
         Ok(())
     }
 

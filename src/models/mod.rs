@@ -12,6 +12,8 @@ use std::error::Error;
 
 pub trait Model {
     fn predict(&self, sample: &[Numeric]) -> Numeric;
+    fn type_id(&self) -> &'static str;
+    fn get_hyperparameters(&self) -> HashMap<String, String>;
 }
 
 pub trait ModelBuilder {
@@ -22,7 +24,7 @@ pub trait ModelBuilder {
         &mut self,
         parameters: &Option<HashMap<String, Numeric>>,
     ) -> Result<(), Box<dyn Error>>;
-    fn with_features(&mut self, features: &[Box<[Numeric]>]) -> Result<(), Box<dyn Error>>;
+    fn with_features(&mut self, features: &HashMap<String, String>) -> Result<(), Box<dyn Error>>;
     fn build(
         &mut self,
         training_values: &[Box<[Numeric]>],
