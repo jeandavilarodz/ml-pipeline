@@ -9,7 +9,7 @@ use crate::types::{Numeric, NUMERIC_DIGIT_PRECISION};
 use std::collections::HashMap;
 
 use plotly::color::Rgb;
-use plotly::common::{Fill, Marker, Mode, Title, Position, Orientation};
+use plotly::common::{Fill, Marker, Mode, Orientation, Position, Title};
 use plotly::layout::{Axis, Legend};
 use plotly::{Layout, Plot, Scatter};
 
@@ -24,21 +24,21 @@ impl Model for KNearestNeighbor {
         // Calculate distances between each example and the k nearest neighbors
         let mut distances = Vec::new();
         for example in self.label_examples.iter() {
-            distances.push((
-                example,
-                euclidean_distance(example, sample),
-            ));
+            distances.push((example, euclidean_distance(example, sample)));
         }
         // Sort the distances by distance
         distances.sort_by(|(_, x), (_, y)| x.abs().partial_cmp(&y.abs()).unwrap());
 
         // Get the label count of the k nearest neighbors
         let mut label_vote = HashMap::new();
-        for (neighbor, _) in distances[..self.num_neighbors].iter() {
-            let key = (neighbor[self.label_index] / NUMERIC_DIGIT_PRECISION) as i64;
-            let counter = label_vote.entry(key).or_insert(0);
-            *counter += 1;
-        }
+        distances
+            .iter()
+            .take(self.num_neighbors)
+            .for_each(|(neighbor, _)| {
+                let key = (neighbor[self.label_index] / NUMERIC_DIGIT_PRECISION) as i64;
+                let counter = label_vote.entry(key).or_insert(0);
+                *counter += 1;
+            });
 
         // Get the most common label
         let mode = label_vote
@@ -93,10 +93,7 @@ impl KNearestNeighbor {
             plot.add_trace(cell);
         }
 
-        let (sx, sy) = points
-            .iter()
-            .map(|p| (p[index.0], p[index.1]))
-            .unzip();
+        let (sx, sy) = points.iter().map(|p| (p[index.0], p[index.1])).unzip();
         let class_labels = points
             .iter()
             .map(|p| *p.last().unwrap())
@@ -108,12 +105,7 @@ impl KNearestNeighbor {
                 .text_position(Position::TopCenter)
                 .marker(Marker::new().color(Rgb::new(0, 0, 0)))
                 .name("Reference Points")
-                .text_array(
-                    class_labels
-                        .iter()
-                        .map(|s| s.to_string())
-                        .collect(),
-                ),
+                .text_array(class_labels.iter().map(|s| s.to_string()).collect()),
         );
         let layout = Layout::new()
             .title(Title::new("Voronoi Diagram Between Reference Points"))

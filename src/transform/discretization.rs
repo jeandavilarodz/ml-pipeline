@@ -1,11 +1,9 @@
 // discretization.rs
 
-/// This file contains the logic to implement two strategies for discretization of the input features. 
+/// This file contains the logic to implement two strategies for discretization of the input features.
 /// The first strategy is equal-width discretization, where the data is split into a fixed number of
 /// bins. The second strategy is equal-frequency discretization, where the data is split into a
 /// fixed number of bins, but the number of items per bin is kept fixed.
-
-use num_traits::ToPrimitive;
 
 use super::Transform;
 use crate::data::column::Column;
@@ -23,11 +21,9 @@ impl Transform for EqualWidthDiscretization {
     ) -> Result<(), Box<dyn Error>> {
         // Check if parameters were given and are correct
         let parameters = parameters.as_ref().ok_or("No parameters given!")?;
-        let num_bins = parameters
+        let num_bins = *parameters
             .get("num_bins")
-            .ok_or("num_bins parameter not present!")?
-            .to_usize()
-            .ok_or("Could not parse num_bins as usize!")?;
+            .ok_or("num_bins parameter not present!")? as usize;
 
         if num_bins < 2 {
             return Err("Number of bins is less than 2!".into());
@@ -66,11 +62,9 @@ impl Transform for EqualFrequencyDiscretization {
     ) -> Result<(), Box<dyn Error>> {
         // Check that parameters exist and are correct
         let parameters = parameters.as_ref().ok_or("No parameters given!")?;
-        let num_bins = parameters
+        let num_bins = *parameters
             .get("num_bins")
-            .ok_or("num_bins parameter not present!")?
-            .to_usize()
-            .ok_or("Could not parse num_bins as usize!")?;
+            .ok_or("num_bins parameter not present!")? as usize;
 
         if num_bins < 2 {
             return Err("Number of bins is less than 2!".into());
@@ -103,7 +97,9 @@ impl Transform for EqualFrequencyDiscretization {
                 .fold(0.0, |acc, (_, val)| acc + val)
                 / max_items_per_bin as f64;
             for (idx, _) in sorted[bin_index_start..bin_index_end].iter() {
-                let value = column.get_mut(*idx).ok_or("Could not find index of value in column")?;
+                let value = column
+                    .get_mut(*idx)
+                    .ok_or("Could not find index of value in column")?;
                 *value = mean;
             }
         }
@@ -111,16 +107,19 @@ impl Transform for EqualFrequencyDiscretization {
         // Modify the last bin to be extended by the residual values of the sorted array
         // Mostly used for columns of odd length
         max_items_per_bin += max_items_per_bin % len_items;
-    
+
         // Replace all values that correspond to the last bin
         let last_mean = sorted[(len_items - max_items_per_bin)..]
             .iter()
-            .fold(0.0, |acc, val| acc + val.1) / (max_items_per_bin as f64);
+            .fold(0.0, |acc, val| acc + val.1)
+            / (max_items_per_bin as f64);
         for (idx, _) in sorted[(len_items - max_items_per_bin)..len_items].iter() {
-            let value = column.get_mut(*idx).ok_or("Could not find index of value in column")?;
+            let value = column
+                .get_mut(*idx)
+                .ok_or("Could not find index of value in column")?;
             *value = last_mean;
         }
-    
+
         Ok(())
     }
 }

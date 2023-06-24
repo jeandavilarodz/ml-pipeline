@@ -7,8 +7,6 @@ edition = "2021"
 
 [dependencies]
 csv = "1.2.1"
-itertools = "0.10.5"
-num-traits = "0.2.15"
 rand = "0.8.5"
 serde = { version = "1.0.164", features = ["derive"] }
 serde_yaml = "0.9.21"

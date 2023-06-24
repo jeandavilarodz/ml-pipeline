@@ -15,9 +15,6 @@ use std::error::Error;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
-use num_traits::ToPrimitive;
-use itertools::Itertools;
-
 pub struct KFold;
 
 impl Partitioner for KFold {
@@ -31,18 +28,16 @@ impl Partitioner for KFold {
             return Err("Couldn't find index of column of target value!".into());
         }
 
-        let k = parameters
+        let k = *parameters
             .get("num_folds")
-            .ok_or("num_folds parameter not present!")?
-            .to_usize()
-            .ok_or("Could not parse num_folds as usize!")?;
+            .ok_or("num_folds parameter not present!")? as usize;
 
         let label_column = table.get_column_idx(label_column_idx).unwrap();
         let num_samples = label_column.values().len();
         let fold_size = num_samples / k;
 
         // Shuffle indexes
-        let mut indexes = (0..num_samples).collect_vec();
+        let mut indexes = (0..num_samples).collect::<Vec<usize>>();
         indexes.shuffle(&mut thread_rng());
 
         // Generate indeces for k - 1 folds

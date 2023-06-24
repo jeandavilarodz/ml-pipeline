@@ -6,8 +6,6 @@
 use super::Model;
 use super::ModelBuilder;
 
-use num_traits::ToPrimitive;
-
 use crate::types::{Numeric, NUMERIC_DIGIT_PRECISION};
 
 use std::collections::HashMap;
@@ -50,9 +48,10 @@ impl ModelBuilder for NullRegressionModelTrainer {
         target_value_idx: usize,
     ) -> Result<Box<dyn Model>, Box<dyn Error>> {
         // Calculate mean of labels
-        let mean = training_values.iter().fold(0.0, |acc, val| {
-            acc + val[target_value_idx].to_f64().unwrap()
-        }) / training_values.len() as f64;
+        let mean = training_values
+            .iter()
+            .fold(0.0, |acc, val| acc + val[target_value_idx])
+            / (training_values.len() as f64);
 
         Ok(Box::new(NullModel { return_value: mean }))
     }
@@ -88,13 +87,11 @@ impl ModelBuilder for NullClassificationModelTrainer {
         let mut value_count = HashMap::new();
 
         // Populate the map with the counts of the most common values
-        for value in training_values.iter() {
-            let key = (value[target_value_idx] / NUMERIC_DIGIT_PRECISION)
-                .to_i64()
-                .ok_or("Could not turn Numeric into key!")?;
+        training_values.iter().for_each(|sample| {
+            let key = (sample[target_value_idx] / NUMERIC_DIGIT_PRECISION) as i64;
             let counter = value_count.entry(key).or_insert(0);
             *counter += 1;
-        }
+        });
 
         // Grab the value of the counter with the largest value
         let mode = value_count

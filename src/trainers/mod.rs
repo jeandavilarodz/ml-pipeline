@@ -1,6 +1,7 @@
 //! This module implements the logic for training algorithms using 
 //! given partitioners, evaluators, and model builders.
 
+//mod stepwise_forward_selection;
 mod simple;
 
 use crate::data::data_frame::DataFrame;

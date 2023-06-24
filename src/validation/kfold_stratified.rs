@@ -1,18 +1,16 @@
 // kfold_stratified.rs
 
-/// This file contains the logic to generate indexes corresponding to a stratified K-fold cross-validation,
-/// where original class label distributions are conserved. Uses the defined data frame and index of label 
-/// columns to generate k lists of indexes which the training and validation algorithm can use to index 
-/// into the original data structure and generate sections of training and validation data to train an model.
-
-use crate::data::data_frame::DataFrame;
-use crate::types::Numeric;
 use super::Partitioner;
+/// This file contains the logic to generate indexes corresponding to a stratified K-fold cross-validation,
+/// where original class label distributions are conserved. Uses the defined data frame and index of label
+/// columns to generate k lists of indexes which the training and validation algorithm can use to index
+/// into the original data structure and generate sections of training and validation data to train an model.
+use crate::data::data_frame::DataFrame;
+use crate::types::{Numeric, NUMERIC_DIGIT_PRECISION};
 
 use std::collections::HashMap;
 use std::error::Error;
 
-use num_traits::ToPrimitive;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
@@ -29,24 +27,22 @@ impl Partitioner for StratifiedKFold {
             return Err("Couldn't find index of column of target value!".into());
         }
 
-        let k = parameters
+        let k = *parameters
             .get("num_folds")
-            .ok_or("num_folds parameter not present!")?
-            .to_usize()
-            .ok_or("Could not parse num_folds as usize!")?;
+            .ok_or("num_folds parameter not present!")? as usize;
 
         // Get a reference to the column that contains the class labels
-        let label_column = table.get_column_idx(label_column_idx).unwrap();
+        let label_column = table
+            .get_column_idx(label_column_idx)
+            .ok_or("Could not find column of target values!")?;
 
         // Populate a map of label values with a list of all the values that are within
         let mut label_indices = HashMap::new();
-        for (idx, &value) in label_column.values().enumerate() {
-            let key = (value * 1e8)
-                .to_i64()
-                .ok_or("Could not turn Numeric into key!")?;
+        label_column.values().enumerate().for_each(|(idx, value)| {
+            let key = (value / NUMERIC_DIGIT_PRECISION) as i64;
             let index_list = label_indices.entry(key).or_insert(vec![]);
             index_list.push(idx);
-        }
+        });
 
         // Shuffle the list of indexes for each class label
         label_indices
@@ -57,7 +53,7 @@ impl Partitioner for StratifiedKFold {
         for (label, index_list) in label_indices.iter() {
             println!(
                 "label: {} | n: {} | p: {}",
-                label,
+                (*label as f64) * NUMERIC_DIGIT_PRECISION,
                 index_list.len(),
                 100.0 * index_list.len() as f32 / label_column.values().len() as f32
             );
@@ -74,7 +70,7 @@ impl Partitioner for StratifiedKFold {
 
             // iterate through each class label in the map of class labels
             for indexes in label_indices.values() {
-                // Calculate the number of items of that class we should pick 
+                // Calculate the number of items of that class we should pick
                 // as well as the starting and ending indexes
                 let fold_size = indexes.len() / k;
                 let start = idx * fold_size;

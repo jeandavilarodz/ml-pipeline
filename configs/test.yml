@@ -18,7 +18,7 @@ training:
   model:
     name: knn-edited
     parameters:
-      epsilon: 0.001
+      epsilon: 0.000001
   partitioning: 
     strategy: stratified-kfold
     parameters:
