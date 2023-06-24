@@ -16,7 +16,7 @@ training:
   strategy: simple
   label_index: 4
   model:
-    name: knn-condensed
+    name: knn-edited
     parameters:
       epsilon: 0.001
   partitioning: 

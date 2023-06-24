@@ -23,10 +23,10 @@ impl Model for KNearestNeighbor {
     fn predict(&self, sample: &[Numeric]) -> Numeric {
         // Calculate distances between each example and the k nearest neighbors
         let mut distances = Vec::new();
-        for training_sample in self.label_examples.iter() {
+        for example in self.label_examples.iter() {
             distances.push((
-                sample,
-                euclidean_distance(training_sample, sample),
+                example,
+                euclidean_distance(example, sample),
             ));
         }
         // Sort the distances by distance
@@ -67,18 +67,17 @@ impl KNearestNeighbor {
     // This function takes a vector of training data and generate the voronoi diagram
     // using plotters
     pub fn generate_voronoi_diagram(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let points = &self.label_examples;
+        let points = self.label_examples.as_slice();
         let index = (0, 3);
         let voronoi_points = points
             .iter()
-            .cloned()
             .map(|p| voronoi::Point::new(p[index.0], p[index.1]))
             .collect();
         let diagram = voronoi::voronoi(voronoi_points, 10.0);
         let polygons = voronoi::make_polygons(&diagram);
 
         let mut voronoi_cells = Vec::new();
-        for polygon in polygons {
+        for polygon in polygons.iter() {
             let (x, y) = polygon.into_iter().map(|p| (p.x(), p.y())).unzip();
             voronoi_cells.push(
                 Scatter::new(x, y)
@@ -96,12 +95,10 @@ impl KNearestNeighbor {
 
         let (sx, sy) = points
             .iter()
-            .cloned()
             .map(|p| (p[index.0], p[index.1]))
             .unzip();
         let class_labels = points
             .iter()
-            .cloned()
             .map(|p| *p.last().unwrap())
             .collect::<Vec<f64>>();
 
@@ -114,7 +111,6 @@ impl KNearestNeighbor {
                 .text_array(
                     class_labels
                         .iter()
-                        .cloned()
                         .map(|s| s.to_string())
                         .collect(),
                 ),
