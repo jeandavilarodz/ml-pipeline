@@ -32,7 +32,7 @@ pub fn get_parser(name: &str) -> Result<ParseFnPtr, Box<dyn Error>> {
 
 pub fn parse_input(
     table: DataFrame<Option<String>>,
-    parsers: Vec<String>,
+    parsers: &Vec<String>,
 ) -> Result<DataFrame<Option<Numeric>>, Box<dyn Error>> {
     let mut ret = DataFrame::<Option<Numeric>>::new();
     if table.columns().len() != parsers.len() {

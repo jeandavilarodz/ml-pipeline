@@ -12,3 +12,4 @@ pub mod transform;
 pub mod types;
 pub mod validation;
 pub mod config;
+pub mod trainers;

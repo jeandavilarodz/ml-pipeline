@@ -3,33 +3,31 @@
 //! This file implements the logic to train an edited k-nearest neighbor learner
 
 use super::Model;
-use super::ModelTrainer;
+use super::ModelBuilder;
 
 use crate::models::knn_classifier::KNearestNeighbor;
-use crate::types::Numeric;
+use crate::types::{Numeric, NUMERIC_DIGIT_PRECISION};
 
 use std::collections::HashMap;
 use std::error::Error;
 
 pub struct EditedKNearestNeighborTrainer {
-    training_data: Option<Vec<Box<[Numeric]>>>,
-    num_neighbors: Option<usize>,
-    label_index: Option<usize>,
+    features: Option<Vec<Box<[Numeric]>>>,
+    num_neighbors: usize,
     epsilon: f64,
-    model_snapshot: Vec<Box<[Numeric]>>,
+    show_voronoi: bool,
 }
 
-impl ModelTrainer for EditedKNearestNeighborTrainer {
+impl ModelBuilder for EditedKNearestNeighborTrainer {
     fn new() -> Self
     where
         Self: Sized,
     {
         Self {
-            num_neighbors: Some(1),
-            training_data: None,
-            label_index: None,
-            epsilon: 1e-8,
-            model_snapshot: vec![],
+            num_neighbors: 1,
+            epsilon: NUMERIC_DIGIT_PRECISION,
+            features: None,
+            show_voronoi: true,
         }
     }
 
@@ -46,42 +44,70 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
         Ok(())
     }
 
-    fn with_training_data(
+    fn with_features(
         &mut self,
-        training_values: &Vec<Box<[Numeric]>>,
-        label_idx: usize,
+        features: &HashMap<String, String>,
     ) -> Result<(), Box<dyn Error>> {
-        if training_values.len() < 1 {
-            return Err("Empty training set given!".into());
+        let mut label_examples: Vec<Box<[Numeric]>> = Vec::new();
+        for (key, val) in features.iter() {
+            match key.as_str() {
+                "label_index" => {},
+                "num_neighbors" => {
+                    self.num_neighbors = val.parse::<usize>()?;
+                }
+                _ => {
+                    label_examples.push(
+                        val.split(",").filter_map(|v| {
+                            v.trim().parse::<Numeric>().ok()
+                        }).collect()
+                    );
+                }
+            }
         }
-        if training_values.get(label_idx).is_none() {
-            return Err("Could not find target label in training data!".into());
-        }
-        self.training_data = Some(training_values.clone());
-        self.label_index = Some(label_idx);
+        self.features = Some(label_examples);
         Ok(())
     }
 
-    fn train(&mut self) -> Result<Box<dyn Model>, Box<dyn Error>> {
-        // Generate example label set for model
-        let mut training_data = self.model_snapshot.clone();
-        training_data.extend(self.training_data.as_ref().unwrap().iter().cloned());
-        println!("{:?}", training_data.len());
+    fn build(
+        &mut self,
+        training_values: &[Box<[Numeric]>],
+        target_value_idx: usize,
+    ) -> Result<Box<dyn Model>, Box<dyn Error>> {
+        if training_values.is_empty() {
+            return Err("Empty training set given!".into());
+        }
+        if target_value_idx >= training_values[0].len() {
+            return Err("Target value index is out of bounds!".into());
+        }
+
+        // Build examples for the algorithm
+        let mut label_examples = Vec::new();
+
+        // If there are features given use them as label examples
+        let mut offset = 0;
+        if let Some(features) = &self.features {
+            label_examples.extend(features.iter().cloned());
+            offset += features.len();
+            println!("features: {:?}", &self.features);
+        }
+
+        // Copy all the input training values as label examples
+        label_examples.extend(training_values.iter().cloned());
 
         // Generate model using internal parameters
         let mut model = KNearestNeighbor {
-            num_neighbors: self.num_neighbors.ok_or("no num_neighbors")?,
-            label_index: self.label_index.ok_or("no label_index")?,
-            label_examples: training_data.clone(),
+            num_neighbors: self.num_neighbors,
+            label_index: target_value_idx,
+            label_examples,
         };
 
         // Predict values and if the label doesn't match add the input value to the set
-        for (idx, sample) in training_data.iter().enumerate().rev() {
+        for (idx, sample) in training_values.iter().enumerate().rev() {
             // Remove current sample from list of label examples
-            model.label_examples.remove(idx);
+            model.label_examples.remove(idx + offset);
 
-            // Predict value of current sample with te rest of the data set
-            let prediction = model.predict(sample.clone());
+            // Predict value of current sample with the rest of the data set
+            let prediction = model.predict(sample);
 
             if (prediction - sample[model.label_index]).abs() > self.epsilon {
                 // Sample was predicted incorrectly, therefore the sample is essential to the set
@@ -90,12 +116,9 @@ impl ModelTrainer for EditedKNearestNeighborTrainer {
             }
         }
 
-        // Save a snapshot of the label examples in the model as a snapshot
-        self.model_snapshot = model.label_examples.clone();
-
-        println!("{:?}", self.model_snapshot.len());
-
-        model.generate_voronoi_diagram()?;
+        if self.show_voronoi {
+            model.generate_voronoi_diagram()?;
+        }
 
         Ok(Box::new(model))
     }

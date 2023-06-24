@@ -6,12 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clippy = "0.0.302"
-csv = "1.2.1"
-itertools = "0.10.5"
-num-traits = "0.2.15"
+# Generate random numbers
 rand = "0.8.5"
+# Read configuration files
 serde = { version = "1.0.164", features = ["derive"] }
 serde_yaml = "0.9.21"
+# Plotting library
 plotly = "0.8"
+# Calculate Voronoi polygons
 voronoi = "0.1"

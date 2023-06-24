@@ -5,13 +5,11 @@ use std::error::Error;
 use std::fs::File;
 
 use pipeline::config::ConfigStruct;
-use pipeline::evaluation;
 use pipeline::input;
-use pipeline::models;
 use pipeline::parsers;
 use pipeline::scrubbers;
 use pipeline::transform;
-use pipeline::validation;
+use pipeline::trainers;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Check if user gave command line arguments
@@ -37,7 +35,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // Parsing stage, this should convert the present strings to numbers
-    let mut parsed = parsers::parse_input(input, configs.parsing)?;
+    let mut parsed = parsers::parse_input(input, &configs.parsing)?;
 
     for col in parsed.columns() {
         println!("{}", col);
@@ -45,7 +43,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Scrubbing stage, this stage replaces missing values and all missing
     // values are dealt with
-    if let Some(configs) = configs.scrub {
+    if let Some(configs) = configs.scrub.as_ref() {
         // There was a scrub stage specified in the configuration file, iterate through each scrubber
         // and clean features accordingly
         for config in configs {
@@ -63,7 +61,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // Transform stage, this stage performs operations to the numbers
-    if let Some(configs) = configs.transform {
+    if let Some(configs) = configs.transform.as_ref() {
         transform::apply(&mut cleaned, configs)?;
 
         for col in cleaned.columns() {
@@ -71,69 +69,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    // Create a training data partitioner for cross-correlation validaton
-    let partitioner = validation::get_partitioner(&configs.training.validation.strategy)?;
-    let folds = partitioner(
-        &cleaned,
-        configs.training.label_index,
-        configs.training.validation.parameters,
-    )?;
-
-    // Fetch evaluator specified on configuration file
-    let evaluator = evaluation::get_evaluator(&configs.training.evaluation)?;
-
-    // Fetch the model specified on configuration file
-    let mut model_builder = models::get_model_builder(&configs.training.model.name)?;
-    model_builder.with_parameters(&configs.training.model.parameters)?;
-
-    let mut model_output = Vec::new();
-    let mut validation_set = Vec::new();
-    let mut training_set = Vec::new();
-    for (fold_idx, (train_indices, validation_indices)) in folds.iter().enumerate() {
-        println!("\nFOLD #: {}", fold_idx);
-
-        // Create training data set
-        println!("TRAINING");
-        training_set.clear();
-        for &idx in train_indices {
-            training_set.push(cleaned.get_row(idx)?.into_boxed_slice());
-        }
-        println!("SIZE: {}", training_set.len());
-
-        // Train model on training data set
-        model_builder.with_training_data(&training_set, configs.training.label_index)?;
-        let model = model_builder.train()?;
-
-        // Use model to evaluate performance of training data
-        model_output.clear();
-        for sample in training_set.iter() {
-            model_output.push(model.predict(sample.clone()));
-        }
-
-        // Calculate performance
-        let training_performance =
-            evaluator(&model_output, &training_set, configs.training.label_index)?;
-        println!("ERROR: {}", training_performance);
-
-        // Create validation data set
-        println!("VALIDATION");
-        validation_set.clear();
-        for &idx in validation_indices {
-            validation_set.push(cleaned.get_row(idx)?.into_boxed_slice());
-        }
-        println!("SIZE: {}", validation_set.len());
-
-        // Use model to predict labels on validation data
-        model_output.clear();
-        for sample in validation_set.iter() {
-            model_output.push(model.predict(sample.clone()));
-        }
-
-        // Calculate validation performance
-        let validation_performance =
-            evaluator(&model_output, &validation_set, configs.training.label_index)?;
-        println!("ERROR: {}", validation_performance);
-    }
+    trainers::train_and_evaluate(&cleaned, &configs)?;
 
     Ok(())
 }
