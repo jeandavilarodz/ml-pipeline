@@ -32,6 +32,27 @@ where T: Clone {
         }
     }
 
+    pub fn from_rows(rows: Vec<Box<[T]>>) -> Result<Self, Box<dyn Error>> {
+        if rows.is_empty() {
+            return Err("Got empty rows".into());
+        }
+        let num_features = rows[0].len();
+        let mut df = Self::new();
+        let mut columns = Vec::new();
+        for _ in 0..num_features {
+            columns.push(Column::new());
+        }
+        for row in rows {
+            for i in 0..num_features {
+                columns[i].push(row[i].clone());
+            }
+        }
+        for column in columns {
+            df.columns.push(column);
+        }
+        Ok(df)
+    }
+
     pub fn columns(&self) -> std::slice::Iter<'_, Column<T>> {
         self.columns.iter()
     }

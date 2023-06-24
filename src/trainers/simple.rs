@@ -19,7 +19,7 @@ pub fn train_and_evaluate(df: &DataFrame<Numeric>, configs: &ConfigStruct) -> Re
     let folds = partitioner(
         df,
         configs.training.label_index,
-        configs.training.partitioning.parameters.clone(),
+        &configs.training.partitioning.parameters,
     )?;
 
     // Fetch evaluator specified on configuration file

@@ -20,7 +20,7 @@ impl Partitioner for StratifiedKFold {
     fn partition(
         table: &DataFrame<Numeric>,
         label_column_idx: usize,
-        parameters: HashMap<String, Numeric>,
+        parameters: &HashMap<String, Numeric>,
     ) -> Result<Vec<(Vec<usize>, Vec<usize>)>, Box<dyn Error>> {
         // Verify input is valid
         if table.get_column_idx(label_column_idx).is_none() {
