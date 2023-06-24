@@ -50,6 +50,7 @@ impl Partitioner for StratifiedKFold {
             .for_each(|indices| indices.shuffle(&mut thread_rng()));
 
         // Printing for debugging purposes
+        println!("## ORIGINAL ##");
         for (label, index_list) in label_indices.iter() {
             println!(
                 "label: {} | n: {} | p: {}",

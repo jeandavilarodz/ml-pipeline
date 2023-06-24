@@ -88,6 +88,7 @@ impl ModelBuilder for EditedKNearestNeighborTrainer {
         if let Some(features) = &self.features {
             label_examples.extend(features.iter().cloned());
             offset += features.len();
+            println!("features: {:?}", &self.features);
         }
 
         // Copy all the input training values as label examples
