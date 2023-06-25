@@ -3,6 +3,7 @@
 mod knn_classifier;
 mod knn_condensed;
 mod knn_edited;
+mod knn_simple;
 mod null;
 
 use crate::types::Numeric;
@@ -40,6 +41,7 @@ pub fn get_model_builder(model_name: &str) -> Result<Box<dyn ModelBuilder>, Box<
             knn_condensed::CondensedKNearestNeighborTrainer::new(),
         )),
         "knn-edited" => Ok(Box::new(knn_edited::EditedKNearestNeighborTrainer::new())),
+        "knn-simple" => Ok(Box::new(knn_simple::KNearestNeighborTrainer::new())),
         _ => Err("Unsupported model: {model_name}".into()),
     }
 }

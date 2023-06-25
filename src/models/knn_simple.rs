@@ -11,14 +11,14 @@ use crate::types::{Numeric, NUMERIC_DIGIT_PRECISION};
 use std::collections::HashMap;
 use std::error::Error;
 
-pub struct CondensedKNearestNeighborTrainer {
+pub struct KNearestNeighborTrainer {
     features: Option<Vec<Box<[Numeric]>>>,
-    num_neighbors: Some<usize>,
+    num_neighbors: Option<usize>,
     epsilon: f64,
     show_voronoi: bool,
 }
 
-impl ModelBuilder for CondensedKNearestNeighborTrainer {
+impl ModelBuilder for KNearestNeighborTrainer {
     fn new() -> Self
     where
         Self: Sized,
@@ -93,11 +93,13 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
         // Push all training values to be label examples
         label_examples.extend(training_values.iter().cloned());
         for sample in training_values.iter() {
-            
+            if !label_examples.contains(sample) {
+                label_examples.push(sample.clone());
+            }
         }
 
         // Build k-nearest neighbors model with the label examples
-        let mut model = KNearestNeighbor {
+        let model = KNearestNeighbor {
             num_neighbors: self.num_neighbors.ok_or("No number of neighbors given!")?,
             label_index: target_value_idx,
             label_examples,
