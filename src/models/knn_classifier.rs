@@ -22,7 +22,7 @@ pub struct KNearestNeighbor {
 impl Model for KNearestNeighbor {
     fn predict(&self, sample: &[Numeric]) -> Numeric {
         // Calculate distances between each example and the k nearest neighbors
-        let mut distances: Vec<(usize, f64)> = self
+        let mut distances: Vec<(usize, Numeric)> = self
             .label_examples
             .iter()
             .map(|example| {
@@ -39,7 +39,7 @@ impl Model for KNearestNeighbor {
                 sample_iter
                     .zip(example_iter)
                     // Euclidean distance
-                    .fold(0.0, |acc, (e1, e2)| acc + (e1 - e2) * (e1 - e2))
+                    .fold(0.0, |acc, (e1, e2)| acc + (e2 - e1) * (e2 - e1))
             })
             .enumerate()
             .collect();
@@ -98,7 +98,7 @@ impl KNearestNeighbor {
     // using plotters
     pub fn generate_voronoi_diagram(&self) -> Result<(), Box<dyn std::error::Error>> {
         let points = self.label_examples.as_slice();
-        let index = (0, 3);
+        let index = (2, 3);
         let voronoi_points = points
             .iter()
             .map(|p| voronoi::Point::new(p[index.0], p[index.1]))
