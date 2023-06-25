@@ -56,7 +56,7 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
                 }
                 _ => {
                     label_examples.push(
-                        val.split(",").filter_map(|v| {
+                        val.split(',').filter_map(|v| {
                             v.trim().parse::<Numeric>().ok()
                         }).collect()
                     );

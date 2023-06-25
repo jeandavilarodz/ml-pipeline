@@ -57,7 +57,7 @@ impl ModelBuilder for EditedKNearestNeighborTrainer {
                 }
                 _ => {
                     label_examples.push(
-                        val.split(",").filter_map(|v| {
+                        val.split(',').filter_map(|v| {
                             v.trim().parse::<Numeric>().ok()
                         }).collect()
                     );
