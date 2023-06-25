@@ -11,15 +11,17 @@ use crate::evaluation;
 use crate::models;
 use crate::validation;
 
+use plotly::color::NamedColor;
+use plotly::layout::ShapeLine;
 use rand::seq::SliceRandom;
 
 use std::collections::HashMap;
 use std::error::Error;
 
-use plotly::common::{Mode, Title};
+use plotly::common::{Marker, Mode, Title};
 use plotly::layout::{Axis, Shape};
-use plotly::{Layout, Plot, Scatter};
 use plotly::ImageFormat;
+use plotly::{Layout, Plot, Scatter};
 
 const MAKE_PLOTS: bool = true;
 
@@ -155,6 +157,7 @@ pub fn train_and_evaluate(
     let best_hyperparameters = best_model.get_hyperparameters();
     let mut model_predictions = Vec::new();
     let mut model_error_metrics = Vec::new();
+    let mut model_hyperparameter_growth = Vec::new();
     let mut training_set = Vec::new();
     let mut testing_set = Vec::new();
     for _ in 0..5 {
@@ -197,6 +200,8 @@ pub fn train_and_evaluate(
             )?;
 
             // Push model error metrics
+            model_hyperparameter_growth
+                .push((model.get_hyperparameters().len() - best_hyperparameters.len()) as f64);
             model_error_metrics.push(model_error_metric);
             println!("model metrics:\n{:#?}", model.get_hyperparameters());
         }
@@ -209,33 +214,51 @@ pub fn train_and_evaluate(
     println!("Average error: {}", average_error);
 
     if MAKE_PLOTS {
-        let mut plot = Plot::new();
-        let mut layout = Layout::new()
-        .title(Title::new("Error metric vs experiment"))
-        .x_axis(Axis::new().title(Title::new("Experiment number")))
-        .y_axis(Axis::new().title(Title::new("Error Metric")));
-
-        for (exp_num, metric) in model_error_metrics.iter().enumerate() {
-            layout.add_shape(
-                Shape::new()
-                    .shape_type(plotly::layout::ShapeType::Line)
-                    .x0(exp_num)
-                    .y0(0.0)
-                    .x1(exp_num)
-                    .y1(*metric)
-            )
-        }
-
-        plot.add_trace(
-            Scatter::new(vec![0.0..10.0], model_error_metrics)
-                .mode(Mode::Markers)
-                .name("Error Metric"),
+        make_lollipop(
+            model_error_metrics,
+            "Experiment VS Error Metric",
+            "error_metric_vs_experiment.png",
         );
 
-        plot.set_layout(layout);
-
-        plot.write_image("experiment.png", ImageFormat::PNG, 1280, 900, 1.0);
+        make_lollipop(
+            model_hyperparameter_growth,
+            "Hyperparameter Growth VS Experiment",
+            "hyperparameter_growth_vs_experiment.png",
+        );
     }
 
     Ok(())
+}
+
+fn make_lollipop(data: Vec<f64>, title: &str, filename: &str) {
+    let mut plot = Plot::new();
+    let mut layout = Layout::new()
+        .title(Title::new(title))
+        .x_axis(Axis::new().dtick(1.0));
+
+    for (exp_num, metric) in data.iter().enumerate() {
+        layout.add_shape(
+            Shape::new()
+                .shape_type(plotly::layout::ShapeType::Line)
+                .x0(exp_num)
+                .y0(0.0)
+                .x1(exp_num)
+                .y1(*metric)
+                .line(
+                    ShapeLine::new()
+                        .color(NamedColor::Gray)
+                        .dash(plotly::common::DashType::Dash),
+                ),
+        )
+    }
+    plot.set_layout(layout);
+
+    let exp_num = (0..data.len()).map(|x| x as f64).collect::<Vec<f64>>();
+    plot.add_trace(
+        Scatter::new(exp_num, data)
+            .mode(Mode::Markers)
+            .marker(Marker::new().color("red").size(15)),
+    );
+
+    plot.write_image(filename, ImageFormat::PNG, 1024, 1024, 1.0);
 }

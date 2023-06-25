@@ -27,7 +27,7 @@ impl ModelBuilder for EditedKNearestNeighborTrainer {
             num_neighbors: 1,
             epsilon: NUMERIC_DIGIT_PRECISION,
             features: None,
-            show_voronoi: true,
+            show_voronoi: false,
         }
     }
 
