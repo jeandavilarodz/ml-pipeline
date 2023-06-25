@@ -27,7 +27,7 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
             features: None,
             num_neighbors: 1,
             epsilon: NUMERIC_DIGIT_PRECISION,
-            show_voronoi: true,
+            show_voronoi: false,
         }
     }
 
@@ -56,7 +56,7 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
                 }
                 _ => {
                     label_examples.push(
-                        val.split(",").filter_map(|v| {
+                        val.split(',').filter_map(|v| {
                             v.trim().parse::<Numeric>().ok()
                         }).collect()
                     );

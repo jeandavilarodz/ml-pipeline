@@ -27,7 +27,7 @@ impl ModelBuilder for EditedKNearestNeighborTrainer {
             num_neighbors: 1,
             epsilon: NUMERIC_DIGIT_PRECISION,
             features: None,
-            show_voronoi: true,
+            show_voronoi: false,
         }
     }
 
@@ -57,7 +57,7 @@ impl ModelBuilder for EditedKNearestNeighborTrainer {
                 }
                 _ => {
                     label_examples.push(
-                        val.split(",").filter_map(|v| {
+                        val.split(',').filter_map(|v| {
                             v.trim().parse::<Numeric>().ok()
                         }).collect()
                     );

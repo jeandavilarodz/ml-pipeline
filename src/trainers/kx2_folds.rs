@@ -11,10 +11,19 @@ use crate::evaluation;
 use crate::models;
 use crate::validation;
 
+use plotly::color::NamedColor;
+use plotly::layout::ShapeLine;
 use rand::seq::SliceRandom;
 
 use std::collections::HashMap;
 use std::error::Error;
+
+use plotly::common::{Marker, Mode, Title};
+use plotly::layout::{Axis, Shape};
+use plotly::ImageFormat;
+use plotly::{Layout, Plot, Scatter};
+
+const MAKE_PLOTS: bool = true;
 
 pub fn train_and_evaluate(
     df: &DataFrame<Numeric>,
@@ -50,7 +59,10 @@ pub fn train_and_evaluate(
     for &idx in training_indexes.iter() {
         training_and_testing_set.push(df.get_row(idx)?.into_boxed_slice());
     }
-    println!("training_and_testing_set.len(): {}", training_and_testing_set.len());
+    println!(
+        "training_and_testing_set.len(): {}",
+        training_and_testing_set.len()
+    );
     let training_and_testing_df = DataFrame::from_rows(training_and_testing_set)?;
 
     let mut first_set = Vec::new();
@@ -116,7 +128,11 @@ pub fn train_and_evaluate(
 
     // Print model hyperparameters with performance for debug
     for (model, error_metric) in models.iter() {
-        println!("error_metric: {}\nhyper-parameters:\n{:#?}", error_metric, model.get_hyperparameters());
+        println!(
+            "error_metric: {}\nhyper-parameters:\n{:#?}",
+            error_metric,
+            model.get_hyperparameters()
+        );
     }
 
     // Choose the model with best performance
@@ -130,14 +146,18 @@ pub fn train_and_evaluate(
         .iter()
         .fold(0.0, |acc, (_, model_error_metric)| acc + model_error_metric)
         / models.len() as f64;
-    
+
     println!("Best model performance: {:?}", best_performance);
-    println!("Best model hyper-parameters:\n{:#?}", best_model.get_hyperparameters());
+    println!(
+        "Best model hyper-parameters:\n{:#?}",
+        best_model.get_hyperparameters()
+    );
     println!("Average model performance: {:?}", avg_model_error_metric);
 
     let best_hyperparameters = best_model.get_hyperparameters();
     let mut model_predictions = Vec::new();
     let mut model_error_metrics = Vec::new();
+    let mut model_hyperparameter_growth = Vec::new();
     let mut training_set = Vec::new();
     let mut testing_set = Vec::new();
     for _ in 0..5 {
@@ -180,15 +200,65 @@ pub fn train_and_evaluate(
             )?;
 
             // Push model error metrics
+            model_hyperparameter_growth
+                .push((model.get_hyperparameters().len() - best_hyperparameters.len()) as f64);
             model_error_metrics.push(model_error_metric);
             println!("model metrics:\n{:#?}", model.get_hyperparameters());
         }
     }
 
-    let average_error = model_error_metrics.iter().fold(0.0, |acc, m| acc + m) / (model_error_metrics.len() as f64);
+    let average_error =
+        model_error_metrics.iter().fold(0.0, |acc, m| acc + m) / (model_error_metrics.len() as f64);
 
     println!("Model error metrics: {:?}", model_error_metrics);
     println!("Average error: {}", average_error);
 
+    if MAKE_PLOTS {
+        make_lollipop(
+            model_error_metrics,
+            "Experiment VS Error Metric",
+            "error_metric_vs_experiment.png",
+        );
+
+        make_lollipop(
+            model_hyperparameter_growth,
+            "Hyperparameter Growth VS Experiment",
+            "hyperparameter_growth_vs_experiment.png",
+        );
+    }
+
     Ok(())
+}
+
+fn make_lollipop(data: Vec<f64>, title: &str, filename: &str) {
+    let mut plot = Plot::new();
+    let mut layout = Layout::new()
+        .title(Title::new(title))
+        .x_axis(Axis::new().dtick(1.0));
+
+    for (exp_num, metric) in data.iter().enumerate() {
+        layout.add_shape(
+            Shape::new()
+                .shape_type(plotly::layout::ShapeType::Line)
+                .x0(exp_num)
+                .y0(0.0)
+                .x1(exp_num)
+                .y1(*metric)
+                .line(
+                    ShapeLine::new()
+                        .color(NamedColor::Gray)
+                        .dash(plotly::common::DashType::Dash),
+                ),
+        )
+    }
+    plot.set_layout(layout);
+
+    let exp_num = (0..data.len()).map(|x| x as f64).collect::<Vec<f64>>();
+    plot.add_trace(
+        Scatter::new(exp_num, data)
+            .mode(Mode::Markers)
+            .marker(Marker::new().color("red").size(15)),
+    );
+
+    plot.write_image(filename, ImageFormat::PNG, 1024, 1024, 1.0);
 }

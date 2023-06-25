@@ -15,11 +15,12 @@ parsing:
   - ordinal
 
 training:
+  strategy: kx2-folds
   label_index: 6
   evaluation: classification-score
   model:
-    name: null-classifier
-  validation: 
+    name: knn-condensed
+  partitioning: 
     strategy: stratified-kfold
     parameters:
       num_folds: 10

@@ -22,6 +22,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let file = File::open(&args[1])?;
     let configs: ConfigStruct = serde_yaml::from_reader(file)?;
 
+    println!("######################################");
+    println!("#############   INPUT   ##############");
+    println!("######################################");
+
     // Input processing stage, this should read a file and return a table of String
     let read = input::get_reader(&configs.input.format)?;
     let input = read(
@@ -33,6 +37,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     for col in input.columns() {
         println!("{}", col);
     }
+    println!("######################################");
+    println!("#############  PARSING  ##############");
+    println!("######################################");
 
     // Parsing stage, this should convert the present strings to numbers
     let mut parsed = parsers::parse_input(input, &configs.parsing)?;
@@ -40,6 +47,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     for col in parsed.columns() {
         println!("{}", col);
     }
+
+    println!("######################################");
+    println!("############# SCRUBBING ##############");
+    println!("######################################");
 
     // Scrubbing stage, this stage replaces missing values and all missing
     // values are dealt with
@@ -62,12 +73,19 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Transform stage, this stage performs operations to the numbers
     if let Some(configs) = configs.transform.as_ref() {
+        println!("######################################");
+        println!("############# TRANSFORM ##############");
+        println!("######################################");
         transform::apply(&mut cleaned, configs)?;
 
         for col in cleaned.columns() {
             println!("{}", col);
         }
     }
+
+    println!("######################################");
+    println!("############# TRAINING  ##############");
+    println!("######################################");
 
     trainers::train_and_evaluate(&cleaned, &configs)?;
 

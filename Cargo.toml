@@ -12,6 +12,6 @@ rand = "0.8.5"
 serde = { version = "1.0.164", features = ["derive"] }
 serde_yaml = "0.9.21"
 # Plotting library
-plotly = "0.8"
+plotly = {version = "0.8", features = ["kaleido"]}
 # Calculate Voronoi polygons
 voronoi = "0.1"
