@@ -22,10 +22,27 @@ pub struct KNearestNeighbor {
 impl Model for KNearestNeighbor {
     fn predict(&self, sample: &[Numeric]) -> Numeric {
         // Calculate distances between each example and the k nearest neighbors
-        let mut distances = Vec::new();
-        for example in self.label_examples.iter() {
-            distances.push((example, euclidean_distance(example, sample)));
-        }
+        let mut distances: Vec<(usize, f64)> = self
+            .label_examples
+            .iter()
+            .map(|example| {
+                let sample_iter = sample
+                    .iter()
+                    .enumerate()
+                    .filter(|&(idx, _)| idx != self.label_index)
+                    .map(|(_, v)| v);
+                let example_iter = example
+                    .iter()
+                    .enumerate()
+                    .filter(|&(idx, _)| idx != self.label_index)
+                    .map(|(_, v)| v);
+                sample_iter
+                    .zip(example_iter)
+                    // Euclidean distance
+                    .fold(0.0, |acc, (e1, e2)| acc + (e1 - e2) * (e1 - e2))
+            })
+            .enumerate()
+            .collect();
         // Sort the distances by distance
         distances.sort_by(|(_, x), (_, y)| x.abs().partial_cmp(&y.abs()).unwrap());
 
@@ -34,8 +51,9 @@ impl Model for KNearestNeighbor {
         distances
             .iter()
             .take(self.num_neighbors)
-            .for_each(|(neighbor, _)| {
-                let key = (neighbor[self.label_index] / NUMERIC_DIGIT_PRECISION) as i64;
+            .for_each(|&(neighbor_idx, _)| {
+                let key = (self.label_examples[neighbor_idx][self.label_index]
+                    / NUMERIC_DIGIT_PRECISION) as i64;
                 let counter = label_vote.entry(key).or_insert(0);
                 *counter += 1;
             });
@@ -58,24 +76,21 @@ impl Model for KNearestNeighbor {
     fn get_hyperparameters(&self) -> HashMap<String, String> {
         let mut ret = HashMap::from([
             ("label_index".into(), self.label_index.to_string()),
-            ("num_neighbors".into(), self.num_neighbors.to_string()),    
+            ("num_neighbors".into(), self.num_neighbors.to_string()),
         ]);
-        self.label_examples.iter().enumerate().for_each(|(idx, ex)| {
-            ret.insert(format!("label_example_{}", idx), ex.iter().skip(1).fold(ex[0].to_string(), |acc, v| acc + &format!(",{}", v)));
-        });
+        self.label_examples
+            .iter()
+            .enumerate()
+            .for_each(|(idx, ex)| {
+                ret.insert(
+                    format!("label_example_{}", idx),
+                    ex.iter()
+                        .skip(1)
+                        .fold(ex[0].to_string(), |acc, v| acc + &format!(",{}", v)),
+                );
+            });
         ret
     }
-}
-
-fn euclidean_distance(row1: &[Numeric], row2: &[Numeric]) -> Numeric {
-    // Calculate the euclidean distance between the two rows
-    let distance = row1
-        .iter()
-        .zip(row2.iter())
-        .fold(0.0, |acc, (&e1, &e2)| acc + (e1 - e2).powi(2));
-
-    // Return the distance
-    distance.sqrt()
 }
 
 impl KNearestNeighbor {
