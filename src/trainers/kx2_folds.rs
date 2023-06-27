@@ -76,7 +76,7 @@ pub fn train_and_evaluate(
 
     let hyperparameter_combinations =
         tuning::grid_search_tuning::get_hyperparameter_combinations(
-            &configs.training.model.tunning,
+            &configs.training.model.tuning,
         )?;
 
     for _ in 0..5 {
@@ -111,11 +111,6 @@ pub fn train_and_evaluate(
             .ok_or("Error fetching hyperparameter combination!")?;
 
         // Create two model instances
-        model_builder.with_hyperparameters(&tuning_hyperparameter_1)?;
-        let model1 = model_builder.build(&first_set, configs.training.label_index)?;
-        model_builder.with_hyperparameters(&tuning_hyperparameter_2)?;
-        let model2 = model_builder.build(&second_set, configs.training.label_index)?;
-
         println!(
             "model 1 trying hyper parameter combination {:?}",
             &tuning_hyperparameter_1
@@ -125,7 +120,16 @@ pub fn train_and_evaluate(
             &tuning_hyperparameter_2
         );
 
+        println!("BUILDING MODEL 1");
+        model_builder.with_hyperparameters(&tuning_hyperparameter_1)?;
+        let model1 = model_builder.build(&first_set, configs.training.label_index)?;
+
+        println!("BUILDING MODEL 2");
+        model_builder.with_hyperparameters(&tuning_hyperparameter_2)?;
+        let model2 = model_builder.build(&second_set, configs.training.label_index)?;
+
         // Generate predictions for the first model
+        println!("MODEL 1 PREDICTIONS");
         model1_predictions.clear();
         for sample in validation_set.iter() {
             let res = match configs.training.model.task.as_str() {
@@ -137,6 +141,7 @@ pub fn train_and_evaluate(
         }
 
         // Generate predictions for the second model
+        println!("MODEL 2 PREDICTIONS");
         model2_predictions.clear();
         for sample in validation_set.iter() {
             let res = match configs.training.model.task.as_str() {

@@ -17,7 +17,7 @@ training:
   label_index: 4
   model:
     task: classification
-    name: knn-condensed
+    name: knn-simple
     parameters:
       epsilon: 0.01
     tuning:

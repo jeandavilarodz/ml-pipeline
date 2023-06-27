@@ -14,6 +14,7 @@ use plotly::common::{Fill, Marker, Mode, Orientation, Position, Title};
 use plotly::layout::{Axis, Legend};
 use plotly::{Layout, Plot, Scatter};
 
+#[derive(Debug)]
 pub struct KNearestNeighbor {
     pub label_examples: Vec<Box<[Numeric]>>,
     pub label_index: usize,

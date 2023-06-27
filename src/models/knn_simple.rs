@@ -81,6 +81,8 @@ impl ModelBuilder for SimpleKNearestNeighborTrainer {
             model.set_hyperparameters(hyperparameters)?;
         }
 
+        println!("Built model: {:?}", model);
+
         if self.show_voronoi {
             model.generate_voronoi_diagram()?;
         }

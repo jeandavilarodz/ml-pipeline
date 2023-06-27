@@ -19,7 +19,7 @@ training:
   label_index: 6
   evaluation: classification-score
   model:
-    name: knn-condensed
+    name: knn-simple
     task: classification
     tuning:
       num_neighbors: [1, 2, 4, 8, 16, 32]
