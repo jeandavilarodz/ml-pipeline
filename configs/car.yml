@@ -20,6 +20,9 @@ training:
   evaluation: classification-score
   model:
     name: knn-condensed
+    task: classification
+    tuning:
+      num_neighbors: [1, 2, 4, 8, 16, 32]
   partitioning: 
     strategy: stratified-kfold
     parameters:

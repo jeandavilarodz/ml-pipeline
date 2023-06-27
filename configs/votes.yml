@@ -63,6 +63,9 @@ training:
   evaluation: mse
   model:
     name: null-regression
+    task: regression
+    tuning:
+      num_neighbors: [1, 2, 4, 8, 16, 32]
   validation: 
     strategy: kfold
     parameters:
