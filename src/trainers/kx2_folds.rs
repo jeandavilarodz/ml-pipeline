@@ -181,7 +181,6 @@ pub fn train_and_evaluate(
     let best_hyperparameters = best_model.get_hyperparameters();
     let mut model_predictions = Vec::new();
     let mut model_error_metrics = Vec::new();
-    let mut model_hyperparameter_growth = Vec::new();
     let mut training_set = Vec::new();
     let mut testing_set = Vec::new();
     for _ in 0..5 {
@@ -207,6 +206,7 @@ pub fn train_and_evaluate(
             }
 
             // Create model instance
+            model_builder.with_hyperparameters(&best_hyperparameters)?;
             let model = model_builder.build(&training_set, configs.training.label_index)?;
 
             // Generate predictions for the model
@@ -228,8 +228,6 @@ pub fn train_and_evaluate(
             )?;
 
             // Push model error metrics
-            model_hyperparameter_growth
-                .push((model.get_hyperparameters().len() - best_hyperparameters.len()) as f64);
             model_error_metrics.push(model_error_metric);
             println!("model metrics:\n{:#?}", model.get_hyperparameters());
         }
@@ -246,12 +244,6 @@ pub fn train_and_evaluate(
             model_error_metrics,
             "Experiment VS Error Metric",
             "error_metric_vs_experiment.png",
-        );
-
-        make_lollipop(
-            model_hyperparameter_growth,
-            "Hyperparameter Growth VS Experiment",
-            "hyperparameter_growth_vs_experiment.png",
         );
     }
 
