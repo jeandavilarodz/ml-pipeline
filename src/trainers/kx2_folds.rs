@@ -111,6 +111,9 @@ pub fn train_and_evaluate(
         model_builder.with_hyperparameters(&tuning_hyperparameter_2)?;
         let model2 = model_builder.build(&second_set, configs.training.label_index)?;
 
+        println!("model 1 trying hyper parameter combination {:?}", &tuning_hyperparameter_1);
+        println!("model 2 trying hyper parameter combination {:?}", &tuning_hyperparameter_2);
+
         // Generate predictions for the first model
         model1_predictions.clear();
         for sample in validation_set.iter() {
