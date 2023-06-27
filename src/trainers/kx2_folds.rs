@@ -72,7 +72,7 @@ pub fn train_and_evaluate(
     let mut model1_predictions = Vec::new();
     let mut model2_predictions = Vec::new();
     let mut models = Vec::new();
-    let hyperparams_tune_config = HashMap::from([("num_folds".to_string(), 2.0)]);
+    let folding_config = HashMap::from([("num_folds".to_string(), 2.0)]);
 
     let hyperparameter_combinations =
         tuning::grid_search_tuning::get_hyperparameter_combinations(
@@ -83,7 +83,7 @@ pub fn train_and_evaluate(
         let folds = partition(
             &training_and_testing_df,
             configs.training.label_index,
-            &hyperparams_tune_config,
+            &folding_config,
         )?;
 
         let (first_set_indexes, second_set_indexes) = &folds[0];
@@ -202,7 +202,7 @@ pub fn train_and_evaluate(
         let folds = partition(
             &training_and_testing_df,
             configs.training.label_index,
-            &hyperparams_tune_config,
+            &folding_config,
         )?;
 
         // Iterate through folds, each time generating a new model
