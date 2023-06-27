@@ -40,7 +40,6 @@ pub fn get_model_builder(model_name: &str) -> Result<Box<dyn ModelBuilder>, Box<
             knn_condensed::CondensedKNearestNeighborTrainer::new(),
         )),
         "knn-edited" => Ok(Box::new(knn_edited::EditedKNearestNeighborTrainer::new())),
-        "knn-simple" => Ok(Box::new(knn_simple::KNearestNeighborTrainer::new())),
         _ => Err("Unsupported model: {model_name}".into()),
     }
 }
