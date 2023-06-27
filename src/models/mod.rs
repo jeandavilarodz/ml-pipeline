@@ -1,8 +1,9 @@
 //! This module contains the implemented ML models
 
-mod knn_classifier;
+mod knn;
 mod knn_condensed;
 mod knn_edited;
+mod knn_simple;
 mod null;
 
 use crate::types::Numeric;
@@ -12,19 +13,17 @@ use std::error::Error;
 
 pub trait Model {
     fn predict(&self, sample: &[Numeric]) -> Numeric;
+    fn label(&self, sample: &[Numeric]) -> Numeric;
     fn type_id(&self) -> &'static str;
     fn get_hyperparameters(&self) -> HashMap<String, String>;
+    fn set_hyperparameters(&mut self, hyperparameters: &HashMap<String, String>) -> Result<(), Box<dyn Error>>;
 }
 
 pub trait ModelBuilder {
     fn new() -> Self
     where
         Self: Sized;
-    fn with_parameters(
-        &mut self,
-        parameters: &Option<HashMap<String, Numeric>>,
-    ) -> Result<(), Box<dyn Error>>;
-    fn with_features(&mut self, features: &HashMap<String, String>) -> Result<(), Box<dyn Error>>;
+    fn with_hyperparameters(&mut self, features: &HashMap<String, String>) -> Result<(), Box<dyn Error>>;
     fn build(
         &mut self,
         training_values: &[Box<[Numeric]>],
@@ -36,6 +35,7 @@ pub fn get_model_builder(model_name: &str) -> Result<Box<dyn ModelBuilder>, Box<
     match model_name {
         "null-regression" => Ok(Box::new(null::NullRegressionModelTrainer::new())),
         "null-classifier" => Ok(Box::new(null::NullClassificationModelTrainer::new())),
+        "knn-simple" => Ok(Box::new(knn_simple::SimpleKNearestNeighborTrainer::new())),
         "knn-condensed" => Ok(Box::new(
             knn_condensed::CondensedKNearestNeighborTrainer::new(),
         )),

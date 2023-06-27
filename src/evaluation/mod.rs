@@ -15,7 +15,7 @@ pub trait Evaluator {
     ) -> Result<f64, Box<dyn Error>>;
 }
 
-type EvaluationFnPtr = fn(&[Numeric], &[Box<[Numeric]>], usize) -> Result<f64, Box<dyn Error>>;
+pub type EvaluationFnPtr = fn(&[Numeric], &[Box<[Numeric]>], usize) -> Result<f64, Box<dyn Error>>;
 
 pub fn get_evaluator(name: &str) -> Result<EvaluationFnPtr, Box<dyn Error>> {
     match name {

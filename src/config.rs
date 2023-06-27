@@ -19,6 +19,12 @@ pub struct ModelConfigs {
     pub parameters: Option<HashMap<String, f64>>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct TunningConfigs {
+    pub name: String,
+    pub parameters: HashMap<String, Vec<f64>>,
+}
+
 // Structure defining fields in the mandatory model stage
 #[derive(Debug, Deserialize)]
 pub struct TrainingConfigs {
@@ -27,6 +33,7 @@ pub struct TrainingConfigs {
     pub partitioning: ValidationConfigs,
     pub strategy: String,
     pub label_index: usize,
+    pub tunning: Option<TunningConfigs>,
 }
 
 // Structure defining fields in the mandatory input stage

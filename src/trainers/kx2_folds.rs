@@ -28,7 +28,7 @@ const MAKE_PLOTS: bool = true;
 pub fn train_and_evaluate(
     df: &DataFrame<Numeric>,
     configs: &ConfigStruct,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<f64, Box<dyn Error>> {
     // Create a training data partitioner for cross-correlation validaton
     let partition = validation::get_partitioner(&configs.training.partitioning.strategy)?;
 
@@ -37,7 +37,6 @@ pub fn train_and_evaluate(
 
     // Fetch the model specified on configuration file
     let mut model_builder = models::get_model_builder(&configs.training.model.name)?;
-    model_builder.with_parameters(&configs.training.model.parameters)?;
 
     // Split the training data into training and validation set
     let first_fold_config = HashMap::from([("num_folds".to_string(), 5.0)]);
@@ -183,7 +182,7 @@ pub fn train_and_evaluate(
             }
 
             // Create model instance
-            model_builder.with_features(&best_hyperparameters)?;
+            model_builder.with_hyperparameters(&best_hyperparameters)?;
             let model = model_builder.build(&training_set, configs.training.label_index)?;
 
             // Generate predictions for the first model
@@ -227,7 +226,7 @@ pub fn train_and_evaluate(
         );
     }
 
-    Ok(())
+    Ok(average_error)
 }
 
 fn make_lollipop(data: Vec<f64>, title: &str, filename: &str) {

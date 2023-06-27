@@ -13,7 +13,7 @@ use crate::models;
 
 use std::error::Error;
 
-pub fn train_and_evaluate(df: &DataFrame<Numeric>, configs: &ConfigStruct) -> Result<(), Box<dyn Error>>{
+pub fn train_and_evaluate(df: &DataFrame<Numeric>, configs: &ConfigStruct) -> Result<f64, Box<dyn Error>>{
     // Create a training data partitioner for cross-correlation validaton
     let partitioner = validation::get_partitioner(&configs.training.partitioning.strategy)?;
     let folds = partitioner(
@@ -27,11 +27,11 @@ pub fn train_and_evaluate(df: &DataFrame<Numeric>, configs: &ConfigStruct) -> Re
 
     // Fetch the model specified on configuration file
     let mut model_builder = models::get_model_builder(&configs.training.model.name)?;
-    model_builder.with_parameters(&configs.training.model.parameters)?;
 
     let mut model_output = Vec::new();
     let mut validation_set = Vec::new();
     let mut training_set = Vec::new();
+    let mut validation_set_performance = Vec::new();
     for (fold_idx, (train_indices, validation_indices)) in folds.iter().enumerate() {
         println!("\nFOLD #: {}", fold_idx);
 
@@ -75,9 +75,12 @@ pub fn train_and_evaluate(df: &DataFrame<Numeric>, configs: &ConfigStruct) -> Re
         let validation_performance =
             evaluator(&model_output, &validation_set, configs.training.label_index)?;
         println!("ERROR: {}", validation_performance);
+        validation_set_performance.push(validation_performance);
 
         println!("Model hyper-parameters:\n{:#?}", model.get_hyperparameters());
     }
 
-    Ok(())
+    let avg_validation_performance = validation_set_performance.iter().sum::<f64>() / validation_set_performance.len() as f64;
+
+    Ok(avg_validation_performance)
 }

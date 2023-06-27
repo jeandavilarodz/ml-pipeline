@@ -5,14 +5,14 @@
 use super::Model;
 use super::ModelBuilder;
 
-use crate::models::knn_classifier::KNearestNeighbor;
+use crate::models::knn::KNearestNeighbor;
 use crate::types::{Numeric, NUMERIC_DIGIT_PRECISION};
 
 use std::collections::HashMap;
 use std::error::Error;
 
 pub struct EditedKNearestNeighborTrainer {
-    features: Option<Vec<Box<[Numeric]>>>,
+    hyperparameters: Option<HashMap<String, String>>,
     num_neighbors: usize,
     epsilon: f64,
     show_voronoi: bool,
@@ -26,45 +26,16 @@ impl ModelBuilder for EditedKNearestNeighborTrainer {
         Self {
             num_neighbors: 1,
             epsilon: NUMERIC_DIGIT_PRECISION,
-            features: None,
+            hyperparameters: None,
             show_voronoi: true,
         }
     }
 
-    fn with_parameters(
-        &mut self,
-        parameters: &Option<HashMap<String, Numeric>>,
-    ) -> Result<(), Box<dyn Error>> {
-        if let Some(parameters) = parameters {
-            if let Some(epsilon) = parameters.get("epsilon") {
-                self.epsilon = *epsilon;
-                println!("Set epsilon to {}", self.epsilon);
-            }
-        }
-        Ok(())
-    }
-
-    fn with_features(
+    fn with_hyperparameters(
         &mut self,
         features: &HashMap<String, String>,
     ) -> Result<(), Box<dyn Error>> {
-        let mut label_examples: Vec<Box<[Numeric]>> = Vec::new();
-        for (key, val) in features.iter() {
-            match key.as_str() {
-                "label_index" => {},
-                "num_neighbors" => {
-                    self.num_neighbors = val.parse::<usize>()?;
-                }
-                _ => {
-                    label_examples.push(
-                        val.split(',').filter_map(|v| {
-                            v.trim().parse::<Numeric>().ok()
-                        }).collect()
-                    );
-                }
-            }
-        }
-        self.features = Some(label_examples);
+        self.hyperparameters = Some(features.clone());
         Ok(())
     }
 
@@ -83,14 +54,6 @@ impl ModelBuilder for EditedKNearestNeighborTrainer {
         // Build examples for the algorithm
         let mut label_examples = Vec::new();
 
-        // If there are features given use them as label examples
-        let mut offset = 0;
-        if let Some(features) = &self.features {
-            label_examples.extend(features.iter().cloned());
-            offset += features.len();
-            println!("features: {:?}", &self.features);
-        }
-
         // Copy all the input training values as label examples
         label_examples.extend(training_values.iter().cloned());
 
@@ -99,12 +62,18 @@ impl ModelBuilder for EditedKNearestNeighborTrainer {
             num_neighbors: self.num_neighbors,
             label_index: target_value_idx,
             label_examples,
+            epsilon: self.epsilon,
+            gamma: 1.0,
         };
+
+        if let Some(hyperparameters) = self.hyperparameters.as_ref() {
+            model.set_hyperparameters(hyperparameters)?;
+        }
 
         // Predict values and if the label doesn't match add the input value to the set
         for (idx, sample) in training_values.iter().enumerate().rev() {
             // Remove current sample from list of label examples
-            model.label_examples.remove(idx + offset);
+            model.label_examples.remove(idx);
 
             // Predict value of current sample with the rest of the data set
             let prediction = model.predict(sample);
@@ -113,6 +82,9 @@ impl ModelBuilder for EditedKNearestNeighborTrainer {
                 // Sample was predicted incorrectly, therefore the sample is essential to the set
                 // and we must add it back to the set
                 model.label_examples.push(sample.clone());
+            }
+            else {
+                println!("Sample {} was removed!", idx);
             }
         }
 

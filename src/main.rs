@@ -8,8 +8,11 @@ use pipeline::config::ConfigStruct;
 use pipeline::input;
 use pipeline::parsers;
 use pipeline::scrubbers;
-use pipeline::transform;
 use pipeline::trainers;
+use pipeline::transform;
+use pipeline::tuning;
+
+use std::collections::HashMap;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Check if user gave command line arguments
@@ -87,7 +90,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("############# TRAINING  ##############");
     println!("######################################");
 
-    trainers::train_and_evaluate(&cleaned, &configs)?;
+    let validation_performance = trainers::train_and_evaluate(&cleaned, &configs)?;
+    println!("Validation performance: {}", validation_performance);
 
     Ok(())
 }
