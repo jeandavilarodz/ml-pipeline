@@ -19,12 +19,22 @@ impl Model for NullModel {
     fn predict(&self, _sample: &[Numeric]) -> Numeric {
         self.return_value
     }
+
+    fn label(&self, _sample: &[Numeric]) -> Numeric {
+        self.return_value
+    }
     fn type_id(&self) -> &'static str {
         "NullModel"
     }
 
     fn get_hyperparameters(&self) -> HashMap<String, String> {
         HashMap::from([("return_value".into(), self.return_value.to_string())])
+    }
+    fn set_hyperparameters(&mut self, hyperparameters: &HashMap<String, String>) -> Result<(), Box<dyn Error>> {
+        if let Some(return_value) = hyperparameters.get("return_value") {
+            self.return_value = return_value.parse::<Numeric>()?;
+        }
+        Ok(())
     }
 }
 
@@ -38,14 +48,7 @@ impl ModelBuilder for NullRegressionModelTrainer {
         Self {}
     }
 
-    fn with_parameters(
-        &mut self,
-        _parameters: &Option<HashMap<String, Numeric>>,
-    ) -> Result<(), Box<dyn Error>> {
-        Ok(())
-    }
-
-    fn with_features(&mut self, _features: &HashMap<String, String>) -> Result<(), Box<dyn Error>> {
+    fn with_hyperparameters(&mut self, _features: &HashMap<String, String>) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
 
@@ -74,17 +77,9 @@ impl ModelBuilder for NullClassificationModelTrainer {
         Self {}
     }
 
-    fn with_parameters(
-        &mut self,
-        _parameters: &Option<HashMap<String, Numeric>>,
-    ) -> Result<(), Box<dyn Error>> {
+    fn with_hyperparameters(&mut self, _features: &HashMap<String, String>) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
-
-    fn with_features(&mut self, _features: &HashMap<String, String>) -> Result<(), Box<dyn Error>> {
-        Ok(())
-    }
-
 
     fn build(
         &mut self,

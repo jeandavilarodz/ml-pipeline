@@ -1,7 +1,8 @@
 // simple.rs
 
 //! This logic just creates a partition of the input DataFrame,
-//! builds a model, trains and evaluates the model for each partition.
+//! builds a model, trains and evaluates the model for each partition
+//! using the kx2 cross-validation algorithm.
 
 use crate::config::ConfigStruct;
 use crate::data::data_frame::DataFrame;
@@ -9,11 +10,13 @@ use crate::types::Numeric;
 
 use crate::evaluation;
 use crate::models;
+use crate::tuning;
 use crate::validation;
 
 use plotly::color::NamedColor;
 use plotly::layout::ShapeLine;
 use rand::seq::SliceRandom;
+use rand::prelude::*;
 
 use std::collections::HashMap;
 use std::error::Error;
@@ -28,7 +31,7 @@ const MAKE_PLOTS: bool = true;
 pub fn train_and_evaluate(
     df: &DataFrame<Numeric>,
     configs: &ConfigStruct,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<f64, Box<dyn Error>> {
     // Create a training data partitioner for cross-correlation validaton
     let partition = validation::get_partitioner(&configs.training.partitioning.strategy)?;
 
@@ -37,7 +40,6 @@ pub fn train_and_evaluate(
 
     // Fetch the model specified on configuration file
     let mut model_builder = models::get_model_builder(&configs.training.model.name)?;
-    model_builder.with_parameters(&configs.training.model.parameters)?;
 
     // Split the training data into training and validation set
     let first_fold_config = HashMap::from([("num_folds".to_string(), 5.0)]);
@@ -72,6 +74,10 @@ pub fn train_and_evaluate(
     let mut models = Vec::new();
     let hyperparams_tune_config = HashMap::from([("num_folds".to_string(), 2.0)]);
 
+    let mut hyperparameter_combinations = tuning::grid_search_tuning::get_hyperparameter_combinations(
+        &configs.training.model.tunning,
+    )?;
+
     for _ in 0..5 {
         let folds = partition(
             &training_and_testing_df,
@@ -93,21 +99,42 @@ pub fn train_and_evaluate(
             second_set.push(training_and_testing_df.get_row(idx)?.into_boxed_slice());
         }
 
+        // Pluck two combinations from hyperparameter combinations
+        let combination_idx = rand::thread_rng().gen_range(0..hyperparameter_combinations.len());
+        let tuning_hyperparameter_1 = hyperparameter_combinations.remove(combination_idx);
+        let combination_idx = rand::thread_rng().gen_range(0..hyperparameter_combinations.len());
+        let tuning_hyperparameter_2 = hyperparameter_combinations.remove(combination_idx);
+
         // Create two model instances
+        model_builder.with_hyperparameters(&tuning_hyperparameter_1)?;
         let model1 = model_builder.build(&first_set, configs.training.label_index)?;
+        model_builder.with_hyperparameters(&tuning_hyperparameter_2)?;
         let model2 = model_builder.build(&second_set, configs.training.label_index)?;
+
+        println!("model 1 trying hyper parameter combination {:?}", &tuning_hyperparameter_1);
+        println!("model 2 trying hyper parameter combination {:?}", &tuning_hyperparameter_2);
 
         // Generate predictions for the first model
         model1_predictions.clear();
-        validation_set.iter().for_each(|sample| {
-            model1_predictions.push(model1.predict(sample));
-        });
+        for sample in validation_set.iter() {
+            let res = match configs.training.model.task.as_str() {
+                "regression" => Ok(model1.predict(sample)),
+                "classification" => Ok(model1.label(sample)),
+                _ => Err("Invalid model task, only regression and classification are supported"),
+            }?;
+            model1_predictions.push(res);
+        }
 
         // Generate predictions for the second model
         model2_predictions.clear();
-        validation_set.iter().for_each(|sample| {
-            model2_predictions.push(model2.predict(sample));
-        });
+        for sample in validation_set.iter() {
+            let res = match configs.training.model.task.as_str() {
+                "regression" => Ok(model2.predict(sample)),
+                "classification" => Ok(model2.label(sample)),
+                _ => Err("Invalid model task, only regression and classification are supported"),
+            }?;
+            model2_predictions.push(res);
+        }
 
         // Evaluate the first model
         let model1_error_metric = evaluate(
@@ -157,7 +184,6 @@ pub fn train_and_evaluate(
     let best_hyperparameters = best_model.get_hyperparameters();
     let mut model_predictions = Vec::new();
     let mut model_error_metrics = Vec::new();
-    let mut model_hyperparameter_growth = Vec::new();
     let mut training_set = Vec::new();
     let mut testing_set = Vec::new();
     for _ in 0..5 {
@@ -183,14 +209,19 @@ pub fn train_and_evaluate(
             }
 
             // Create model instance
-            model_builder.with_features(&best_hyperparameters)?;
+            model_builder.with_hyperparameters(&best_hyperparameters)?;
             let model = model_builder.build(&training_set, configs.training.label_index)?;
 
-            // Generate predictions for the first model
+            // Generate predictions for the model
             model_predictions.clear();
-            testing_set.iter().for_each(|sample| {
-                model_predictions.push(model.predict(sample));
-            });
+            for sample in testing_set.iter() {
+                let res = match configs.training.model.task.as_str() {
+                    "regression" => Ok(model.predict(sample)),
+                    "classification" => Ok(model.label(sample)),
+                    _ => Err("Invalid model task, only regression and classification are supported"),
+                }?;
+                model_predictions.push(res);
+            }
 
             // Evaluate the model
             let model_error_metric = evaluate(
@@ -200,8 +231,6 @@ pub fn train_and_evaluate(
             )?;
 
             // Push model error metrics
-            model_hyperparameter_growth
-                .push((model.get_hyperparameters().len() - best_hyperparameters.len()) as f64);
             model_error_metrics.push(model_error_metric);
             println!("model metrics:\n{:#?}", model.get_hyperparameters());
         }
@@ -219,15 +248,9 @@ pub fn train_and_evaluate(
             "Experiment VS Error Metric",
             "error_metric_vs_experiment.png",
         );
-
-        make_lollipop(
-            model_hyperparameter_growth,
-            "Hyperparameter Growth VS Experiment",
-            "hyperparameter_growth_vs_experiment.png",
-        );
     }
 
-    Ok(())
+    Ok(average_error)
 }
 
 fn make_lollipop(data: Vec<f64>, title: &str, filename: &str) {

@@ -16,7 +16,9 @@ pub struct ValidationConfigs {
 #[derive(Debug, Deserialize)]
 pub struct ModelConfigs {
     pub name: String,
+    pub task: String,
     pub parameters: Option<HashMap<String, f64>>,
+    pub tunning: HashMap<String, Vec<f64>>,
 }
 
 // Structure defining fields in the mandatory model stage

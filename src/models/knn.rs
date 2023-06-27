@@ -1,4 +1,4 @@
-// knn_classifier.rs
+// knn.rs
 
 //! This file implements the logic to predict values using a k-nearest neighbor learner
 
@@ -7,6 +7,7 @@ use super::Model;
 use crate::types::{Numeric, NUMERIC_DIGIT_PRECISION};
 
 use std::collections::HashMap;
+use std::error::Error;
 
 use plotly::color::Rgb;
 use plotly::common::{Fill, Marker, Mode, Orientation, Position, Title};
@@ -17,12 +18,14 @@ pub struct KNearestNeighbor {
     pub label_examples: Vec<Box<[Numeric]>>,
     pub label_index: usize,
     pub num_neighbors: usize,
+    pub epsilon: f64,
+    pub gamma: f64,
 }
 
 impl Model for KNearestNeighbor {
-    fn predict(&self, sample: &[Numeric]) -> Numeric {
+    fn label(&self, sample: &[Numeric]) -> Numeric {
         // Calculate distances between each example and the k nearest neighbors
-        let mut distances: Vec<(usize, f64)> = self
+        let mut distances: Vec<(usize, Numeric)> = self
             .label_examples
             .iter()
             .map(|example| {
@@ -39,7 +42,7 @@ impl Model for KNearestNeighbor {
                 sample_iter
                     .zip(example_iter)
                     // Euclidean distance
-                    .fold(0.0, |acc, (e1, e2)| acc + (e1 - e2) * (e1 - e2))
+                    .fold(0.0, |acc, (e1, e2)| acc + (e2 - e1) * (e2 - e1))
             })
             .enumerate()
             .collect();
@@ -69,27 +72,81 @@ impl Model for KNearestNeighbor {
         (*mode as f64) * NUMERIC_DIGIT_PRECISION
     }
 
+    fn predict(&self, sample: &[Numeric]) -> Numeric {
+        // Calculate distances between each example and the k nearest neighbors
+        let mut distances: Vec<(usize, Numeric)> = self
+            .label_examples
+            .iter()
+            .map(|example| {
+                let sample_iter = sample
+                    .iter()
+                    .enumerate()
+                    .filter(|&(idx, _)| idx != self.label_index)
+                    .map(|(_, v)| v);
+                let example_iter = example
+                    .iter()
+                    .enumerate()
+                    .filter(|&(idx, _)| idx != self.label_index)
+                    .map(|(_, v)| v);
+                sample_iter
+                    .zip(example_iter)
+                    // Euclidean distance
+                    .fold(0.0, |acc, (e1, e2)| acc + (e2 - e1) * (e2 - e1))
+            })
+            .enumerate()
+            .collect();
+        // Sort the distances by distance
+        distances.sort_by(|(_, x), (_, y)| x.abs().partial_cmp(&y.abs()).unwrap());
+
+        // Calculate 
+        let kernel_metric = distances
+            .iter()
+            .take(self.num_neighbors)
+            .map(|&(_, dist)| (-self.gamma * dist).exp())
+            .collect::<Vec<f64>>();
+        let numerator = distances
+            .iter()
+            .take(self.num_neighbors)
+            .map(|&(idx, _)| idx)
+            .zip(kernel_metric.iter())
+            .fold(0.0, |acc, (idx, metric)| {
+                acc + metric * self.label_examples[idx][self.label_index]
+            });
+        let denominator = kernel_metric.iter().sum::<f64>();
+
+        // return the most common label
+        numerator / denominator
+    }
+
     fn type_id(&self) -> &'static str {
         "KNearestNeighbor"
     }
 
     fn get_hyperparameters(&self) -> HashMap<String, String> {
-        let mut ret = HashMap::from([
-            ("label_index".into(), self.label_index.to_string()),
+        let ret = HashMap::from([
             ("num_neighbors".into(), self.num_neighbors.to_string()),
+            ("epsilon".into(), self.epsilon.to_string()),
+            ("gamma".into(), self.gamma.to_string()),
         ]);
-        self.label_examples
-            .iter()
-            .enumerate()
-            .for_each(|(idx, ex)| {
-                ret.insert(
-                    format!("label_example_{}", idx),
-                    ex.iter()
-                        .skip(1)
-                        .fold(ex[0].to_string(), |acc, v| acc + &format!(",{}", v)),
-                );
-            });
         ret
+    }
+
+    fn set_hyperparameters(&mut self, hyperparameters: &HashMap<String, String>) -> Result<(), Box<dyn Error>>{
+        for (key, val) in hyperparameters.iter() {
+            match key.as_str() {
+                "num_neighbors" => {
+                    self.num_neighbors = val.parse::<usize>()?;
+                }
+                "epsilon" => {
+                    self.epsilon = val.parse::<f64>()?;
+                }
+                "gamma" => {
+                    self.gamma = val.parse::<f64>()?;
+                }
+                _ => {}
+            }
+        }
+        Ok(())
     }
 }
 
@@ -98,7 +155,7 @@ impl KNearestNeighbor {
     // using plotters
     pub fn generate_voronoi_diagram(&self) -> Result<(), Box<dyn std::error::Error>> {
         let points = self.label_examples.as_slice();
-        let index = (0, 3);
+        let index = (2, 3);
         let voronoi_points = points
             .iter()
             .map(|p| voronoi::Point::new(p[index.0], p[index.1]))

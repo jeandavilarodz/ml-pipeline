@@ -10,15 +10,18 @@ parsing:
   - numeric
   - numeric
   - numeric
-  - nominal
+  - ordinal
 
 training:
   strategy: kx2-folds
   label_index: 4
   model:
-    name: knn-edited
+    task: classification
+    name: knn-condensed
     parameters:
-      epsilon: 0.000001
+      epsilon: 0.01
+    tuning:
+      num_neighbors: [1, 2, 4, 8, 16, 32]
   partitioning: 
     strategy: stratified-kfold
     parameters:

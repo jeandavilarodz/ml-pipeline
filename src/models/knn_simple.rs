@@ -11,14 +11,14 @@ use crate::types::{Numeric, NUMERIC_DIGIT_PRECISION};
 use std::collections::HashMap;
 use std::error::Error;
 
-pub struct CondensedKNearestNeighborTrainer {
+pub struct SimpleKNearestNeighborTrainer {
     hyperparameters: Option<HashMap<String, String>>,
     num_neighbors: usize,
     epsilon: f64,
     show_voronoi: bool,
 }
 
-impl ModelBuilder for CondensedKNearestNeighborTrainer {
+impl ModelBuilder for SimpleKNearestNeighborTrainer {
     fn new() -> Self
     where
         Self: Sized,
@@ -43,7 +43,7 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
         &mut self,
         training_values: &[Box<[Numeric]>],
         target_value_idx: usize,
-    ) -> Result<Box<dyn Model>, Box<dyn Error>> {
+        ) -> Result<Box<dyn Model>, Box<dyn Error>> {
         if training_values.is_empty() {
             return Err("Empty training set given!".into());
         }
@@ -51,14 +51,11 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
             return Err("Target value index is out of bounds!".into());
         }
 
-        // Build iterator over training values
-        let mut training_data = training_values.iter();
-
         // Build examples for the algorithm
         let mut label_examples = Vec::new();
-
-        // Push first sample of training data
-        label_examples.push(training_data.next().unwrap().clone());
+        
+        // Push all training values to be label examples
+        label_examples.extend(training_values.iter().cloned());
 
         // Calculate training value mean
         let training_value_mean = training_values.iter().fold(0.0, |acc, x| {
@@ -81,17 +78,6 @@ impl ModelBuilder for CondensedKNearestNeighborTrainer {
 
         if let Some(hyperparameters) = self.hyperparameters.as_ref() {
             model.set_hyperparameters(hyperparameters)?;
-        }
-
-        // Iterat over training data
-        for (idx, sample) in training_data.enumerate() {
-            let prediction = model.predict(sample);
-
-            if (prediction - sample[model.label_index]).abs() > self.epsilon {
-                // Value doesn't match, add to the label example set
-                model.label_examples.push(sample.clone());
-                println!("Sample {} was added", idx);
-            }
         }
 
         if self.show_voronoi {
