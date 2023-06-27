@@ -15,8 +15,8 @@ use crate::validation;
 
 use plotly::color::NamedColor;
 use plotly::layout::ShapeLine;
-use rand::seq::SliceRandom;
 use rand::prelude::*;
+use rand::seq::SliceRandom;
 
 use std::collections::HashMap;
 use std::error::Error;
@@ -74,9 +74,10 @@ pub fn train_and_evaluate(
     let mut models = Vec::new();
     let hyperparams_tune_config = HashMap::from([("num_folds".to_string(), 2.0)]);
 
-    let mut hyperparameter_combinations = tuning::grid_search_tuning::get_hyperparameter_combinations(
-        &configs.training.model.tunning,
-    )?;
+    let hyperparameter_combinations =
+        tuning::grid_search_tuning::get_hyperparameter_combinations(
+            &configs.training.model.tunning,
+        )?;
 
     for _ in 0..5 {
         let folds = partition(
@@ -101,9 +102,13 @@ pub fn train_and_evaluate(
 
         // Pluck two combinations from hyperparameter combinations
         let combination_idx = rand::thread_rng().gen_range(0..hyperparameter_combinations.len());
-        let tuning_hyperparameter_1 = hyperparameter_combinations.remove(combination_idx);
+        let tuning_hyperparameter_1 = hyperparameter_combinations
+            .get(combination_idx)
+            .ok_or("Error fetching hyperparameter combination!")?;
         let combination_idx = rand::thread_rng().gen_range(0..hyperparameter_combinations.len());
-        let tuning_hyperparameter_2 = hyperparameter_combinations.remove(combination_idx);
+        let tuning_hyperparameter_2 = hyperparameter_combinations
+            .get(combination_idx)
+            .ok_or("Error fetching hyperparameter combination!")?;
 
         // Create two model instances
         model_builder.with_hyperparameters(&tuning_hyperparameter_1)?;
@@ -111,8 +116,14 @@ pub fn train_and_evaluate(
         model_builder.with_hyperparameters(&tuning_hyperparameter_2)?;
         let model2 = model_builder.build(&second_set, configs.training.label_index)?;
 
-        println!("model 1 trying hyper parameter combination {:?}", &tuning_hyperparameter_1);
-        println!("model 2 trying hyper parameter combination {:?}", &tuning_hyperparameter_2);
+        println!(
+            "model 1 trying hyper parameter combination {:?}",
+            &tuning_hyperparameter_1
+        );
+        println!(
+            "model 2 trying hyper parameter combination {:?}",
+            &tuning_hyperparameter_2
+        );
 
         // Generate predictions for the first model
         model1_predictions.clear();
@@ -218,7 +229,9 @@ pub fn train_and_evaluate(
                 let res = match configs.training.model.task.as_str() {
                     "regression" => Ok(model.predict(sample)),
                     "classification" => Ok(model.label(sample)),
-                    _ => Err("Invalid model task, only regression and classification are supported"),
+                    _ => {
+                        Err("Invalid model task, only regression and classification are supported")
+                    }
                 }?;
                 model_predictions.push(res);
             }
