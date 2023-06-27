@@ -29,16 +29,21 @@ impl Model for KNearestNeighbor {
             .label_examples
             .iter()
             .map(|example| {
+                // Prepare iterator over point we want to classify
                 let sample_iter = sample
                     .iter()
                     .enumerate()
                     .filter(|&(idx, _)| idx != self.label_index)
                     .map(|(_, v)| v);
+
+                // Prepare iterator over training example 
                 let example_iter = example
                     .iter()
                     .enumerate()
                     .filter(|&(idx, _)| idx != self.label_index)
                     .map(|(_, v)| v);
+
+                // Calculate distance using L2-norm
                 sample_iter
                     .zip(example_iter)
                     // Euclidean distance
@@ -81,16 +86,21 @@ impl Model for KNearestNeighbor {
             .label_examples
             .iter()
             .map(|example| {
+                // Prepare iterator over point we want to classify
                 let sample_iter = sample
                     .iter()
                     .enumerate()
                     .filter(|&(idx, _)| idx != self.label_index)
                     .map(|(_, v)| v);
+
+                // Prepare iterator over training example 
                 let example_iter = example
                     .iter()
                     .enumerate()
                     .filter(|&(idx, _)| idx != self.label_index)
                     .map(|(_, v)| v);
+
+                // Calculate distance using L2-norm
                 sample_iter
                     .zip(example_iter)
                     // Euclidean distance
@@ -98,6 +108,7 @@ impl Model for KNearestNeighbor {
             })
             .enumerate()
             .collect();
+
         // Sort the distances by distance
         distances.sort_by(|(_, x), (_, y)| x.abs().partial_cmp(&y.abs()).unwrap());
 
