@@ -21,7 +21,6 @@ pub struct ModelConfigs {
 
 #[derive(Debug, Deserialize)]
 pub struct TunningConfigs {
-    pub name: String,
     pub parameters: HashMap<String, Vec<f64>>,
 }
 
@@ -33,7 +32,7 @@ pub struct TrainingConfigs {
     pub partitioning: ValidationConfigs,
     pub strategy: String,
     pub label_index: usize,
-    pub tunning: Option<TunningConfigs>,
+    pub tunning: TunningConfigs,
 }
 
 // Structure defining fields in the mandatory input stage

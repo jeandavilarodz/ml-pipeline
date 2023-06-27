@@ -9,11 +9,13 @@ use crate::types::Numeric;
 
 use crate::evaluation;
 use crate::models;
+use crate::tuning;
 use crate::validation;
 
 use plotly::color::NamedColor;
 use plotly::layout::ShapeLine;
 use rand::seq::SliceRandom;
+use rand::prelude::*;
 
 use std::collections::HashMap;
 use std::error::Error;
@@ -71,6 +73,10 @@ pub fn train_and_evaluate(
     let mut models = Vec::new();
     let hyperparams_tune_config = HashMap::from([("num_folds".to_string(), 2.0)]);
 
+    let mut hyperparameter_combinations = tuning::grid_search_tuning::get_hyperparameter_combinations(
+        &configs.training.tunning.parameters,
+    )?;
+
     for _ in 0..5 {
         let folds = partition(
             &training_and_testing_df,
@@ -92,8 +98,16 @@ pub fn train_and_evaluate(
             second_set.push(training_and_testing_df.get_row(idx)?.into_boxed_slice());
         }
 
+        // Pluck two combinations from hyperparameter combinations
+        let combination_idx = rand::thread_rng().gen_range(0..hyperparameter_combinations.len());
+        let tuning_hyperparameter_1 = hyperparameter_combinations.remove(combination_idx);
+        let combination_idx = rand::thread_rng().gen_range(0..hyperparameter_combinations.len());
+        let tuning_hyperparameter_2 = hyperparameter_combinations.remove(combination_idx);
+
         // Create two model instances
+        model_builder.with_hyperparameters(&tuning_hyperparameter_1)?;
         let model1 = model_builder.build(&first_set, configs.training.label_index)?;
+        model_builder.with_hyperparameters(&tuning_hyperparameter_2)?;
         let model2 = model_builder.build(&second_set, configs.training.label_index)?;
 
         // Generate predictions for the first model
@@ -182,7 +196,6 @@ pub fn train_and_evaluate(
             }
 
             // Create model instance
-            model_builder.with_hyperparameters(&best_hyperparameters)?;
             let model = model_builder.build(&training_set, configs.training.label_index)?;
 
             // Generate predictions for the first model
