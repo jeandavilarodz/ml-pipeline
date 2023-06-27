@@ -57,13 +57,23 @@ impl ModelBuilder for EditedKNearestNeighborTrainer {
         // Copy all the input training values as label examples
         label_examples.extend(training_values.iter().cloned());
 
+        // Calculate training value mean
+        let training_value_mean = training_values.iter().fold(0.0, |acc, x| {
+            acc + x[target_value_idx]
+        }) / training_values.len() as f64;
+
+        // Calculate training value variance
+        let training_value_variance = training_values.iter().fold(0.0, |acc, sample| {
+            acc + (sample[target_value_idx] - training_value_mean).powi(2)
+        }) / (training_values.len() - 1) as f64;
+
         // Generate model using internal parameters
         let mut model = KNearestNeighbor {
             num_neighbors: self.num_neighbors,
             label_index: target_value_idx,
             label_examples,
             epsilon: self.epsilon,
-            gamma: 1.0,
+            gamma: training_value_variance.sqrt(),
         };
 
         if let Some(hyperparameters) = self.hyperparameters.as_ref() {
