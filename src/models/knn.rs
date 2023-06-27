@@ -49,13 +49,14 @@ impl Model for KNearestNeighbor {
         // Sort the distances by distance
         distances.sort_by(|(_, x), (_, y)| x.abs().partial_cmp(&y.abs()).unwrap());
 
+        // Accumulate neighbors
+        let neighbors = distances.iter().take(self.num_neighbors).collect::<Vec<_>>();
+
         // Get the label count of the k nearest neighbors
         let mut label_vote = HashMap::new();
-        distances
-            .iter()
-            .take(self.num_neighbors)
+        neighbors.iter()
             .for_each(|&(neighbor_idx, _)| {
-                let key = (self.label_examples[neighbor_idx][self.label_index]
+                let key = (self.label_examples[*neighbor_idx][self.label_index]
                     / NUMERIC_DIGIT_PRECISION) as i64;
                 let counter = label_vote.entry(key).or_insert(0);
                 *counter += 1;
@@ -67,6 +68,8 @@ impl Model for KNearestNeighbor {
             .max_by_key(|&(_, count)| count)
             .map(|(val, _)| val)
             .expect("No mode found!");
+
+        println!("Neighbors: {:?} -> label: {}", neighbors, ((*mode as f64) * NUMERIC_DIGIT_PRECISION));
 
         // return the most common label
         (*mode as f64) * NUMERIC_DIGIT_PRECISION
@@ -98,21 +101,26 @@ impl Model for KNearestNeighbor {
         // Sort the distances by distance
         distances.sort_by(|(_, x), (_, y)| x.abs().partial_cmp(&y.abs()).unwrap());
 
-        // Calculate 
-        let kernel_metric = distances
-            .iter()
-            .take(self.num_neighbors)
+        // Accumulate neighbors
+        let neighbors = distances.iter().take(self.num_neighbors).collect::<Vec<_>>();
+
+        // Calculate kernel metrics
+        let kernel_metric = neighbors.iter()
             .map(|&(_, dist)| (-self.gamma * dist).exp())
             .collect::<Vec<f64>>();
-        let numerator = distances
-            .iter()
-            .take(self.num_neighbors)
+
+        // Calculate numerator of kernel smoothing
+        let numerator = neighbors.iter()
             .map(|&(idx, _)| idx)
             .zip(kernel_metric.iter())
             .fold(0.0, |acc, (idx, metric)| {
-                acc + metric * self.label_examples[idx][self.label_index]
+                acc + metric * self.label_examples[*idx][self.label_index]
             });
+
+        // Calculate denominator of kernel smoothing
         let denominator = kernel_metric.iter().sum::<f64>();
+
+        println!("Neighbors: {:?} -> point: {}", neighbors, (numerator / denominator));
 
         // return the most common label
         numerator / denominator
