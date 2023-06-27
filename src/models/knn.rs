@@ -132,6 +132,7 @@ impl Model for KNearestNeighbor {
         let denominator = kernel_metric.iter().sum::<f64>();
 
         println!("Neighbors: {:?} -> point: {}", neighbors, (numerator / denominator));
+        println!("Kernel metrics: {:?}", kernel_metric);
 
         // return the most common label
         numerator / denominator
