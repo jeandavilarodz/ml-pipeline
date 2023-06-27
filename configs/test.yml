@@ -16,9 +16,13 @@ training:
   strategy: kx2-folds
   label_index: 4
   model:
+    task: classification
     name: knn-condensed
     parameters:
       epsilon: 0.01
+    tuning:
+      num_neighbors: [1, 2, 4, 8, 16, 32]
+      epsilon: [0.001, 0.01, 0.1, 0.0001]
   partitioning: 
     strategy: stratified-kfold
     parameters:

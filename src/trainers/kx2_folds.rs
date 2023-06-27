@@ -75,7 +75,7 @@ pub fn train_and_evaluate(
     let hyperparams_tune_config = HashMap::from([("num_folds".to_string(), 2.0)]);
 
     let mut hyperparameter_combinations = tuning::grid_search_tuning::get_hyperparameter_combinations(
-        &configs.training.tunning.parameters,
+        &configs.training.model.tunning,
     )?;
 
     for _ in 0..5 {
