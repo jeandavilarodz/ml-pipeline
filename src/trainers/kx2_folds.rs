@@ -113,15 +113,25 @@ pub fn train_and_evaluate(
 
         // Generate predictions for the first model
         model1_predictions.clear();
-        validation_set.iter().for_each(|sample| {
-            model1_predictions.push(model1.predict(sample));
-        });
+        for sample in validation_set.iter() {
+            let res = match configs.training.model.task.as_str() {
+                "regression" => Ok(model1.predict(sample)),
+                "classification" => Ok(model1.label(sample)),
+                _ => Err("Invalid model task, only regression and classification are supported"),
+            }?;
+            model1_predictions.push(res);
+        }
 
         // Generate predictions for the second model
         model2_predictions.clear();
-        validation_set.iter().for_each(|sample| {
-            model2_predictions.push(model2.predict(sample));
-        });
+        for sample in validation_set.iter() {
+            let res = match configs.training.model.task.as_str() {
+                "regression" => Ok(model2.predict(sample)),
+                "classification" => Ok(model2.label(sample)),
+                _ => Err("Invalid model task, only regression and classification are supported"),
+            }?;
+            model2_predictions.push(res);
+        }
 
         // Evaluate the first model
         let model1_error_metric = evaluate(
@@ -199,11 +209,16 @@ pub fn train_and_evaluate(
             // Create model instance
             let model = model_builder.build(&training_set, configs.training.label_index)?;
 
-            // Generate predictions for the first model
+            // Generate predictions for the model
             model_predictions.clear();
-            testing_set.iter().for_each(|sample| {
-                model_predictions.push(model.predict(sample));
-            });
+            for sample in testing_set.iter() {
+                let res = match configs.training.model.task.as_str() {
+                    "regression" => Ok(model.predict(sample)),
+                    "classification" => Ok(model.label(sample)),
+                    _ => Err("Invalid model task, only regression and classification are supported"),
+                }?;
+                model_predictions.push(res);
+            }
 
             // Evaluate the model
             let model_error_metric = evaluate(
