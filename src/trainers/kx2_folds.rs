@@ -1,7 +1,8 @@
 // simple.rs
 
 //! This logic just creates a partition of the input DataFrame,
-//! builds a model, trains and evaluates the model for each partition.
+//! builds a model, trains and evaluates the model for each partition
+//! using the kx2 cross-validation algorithm.
 
 use crate::config::ConfigStruct;
 use crate::data::data_frame::DataFrame;

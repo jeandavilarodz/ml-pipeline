@@ -1,5 +1,6 @@
 //! This module implements the logic for training algorithms using 
 //! given partitioners, evaluators, and model builders.
+//! The intention is that this module shall abstract the experiment algorithms
 
 mod simple;
 mod kx2_folds;

@@ -2,6 +2,7 @@
 
 //! This logic just creates a partition of the input DataFrame,
 //! builds a model, trains and evaluates the model for each partition.
+//! This just simply performs a k-fold cross validation on the training data.
 
 use crate::data::data_frame::DataFrame;
 use crate::types::Numeric;
