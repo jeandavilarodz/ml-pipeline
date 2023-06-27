@@ -1,6 +1,7 @@
 // knn_condensed.rs
 
-//! This file implements the logic to train a condensed k-nearest neighbor learner
+//! This file implements the logic to train a k-nearest neighbor learner
+//! using all given training samples
 
 use super::Model;
 use super::ModelBuilder;

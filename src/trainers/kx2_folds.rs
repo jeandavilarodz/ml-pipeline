@@ -1,4 +1,4 @@
-// simple.rs
+// kx2_folds.rs
 
 //! This logic just creates a partition of the input DataFrame,
 //! builds a model, trains and evaluates the model for each partition
@@ -153,6 +153,8 @@ pub fn train_and_evaluate(
             &validation_set,
             configs.training.label_index,
         )?;
+
+        // Evaluate the second model
         let model2_error_metric = evaluate(
             &model2_predictions,
             &validation_set,
