@@ -10,9 +10,7 @@ use pipeline::parsers;
 use pipeline::scrubbers;
 use pipeline::trainers;
 use pipeline::transform;
-use pipeline::tuning;
 
-use std::collections::HashMap;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Check if user gave command line arguments
